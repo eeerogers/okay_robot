@@ -37,8 +37,8 @@ MujocoSimNode::MujocoSimNode()
 
 MujocoSimNode::~MujocoSimNode()
 {
-    mj_deleteData(d_);
-    mj_deleteModel(m_);
+    mj_deleteData(this->d_);
+    mj_deleteModel(this->m_);
 }
 
 void MujocoSimNode::timer_callback()

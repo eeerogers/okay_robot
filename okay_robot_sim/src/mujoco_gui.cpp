@@ -3,6 +3,21 @@
 #include "mujoco/mujoco.h"
 #include <GLFW/glfw3.h>
 
+void spin_mujoco_gui(mjModel* m, mjData* d)
+{
+    MujocoGUI mujoco_gui(&m, &d);
+    if (!mujoco_gui.init()) {
+        printf("error initializing mujoco gui\n");
+        return;
+    }
+
+    while (!mujoco_gui.should_close()) {
+        mujoco_gui.update();
+    }
+
+    mujoco_gui.free();
+}
+
 int MujocoGUI::init()
 {
     // init glfw

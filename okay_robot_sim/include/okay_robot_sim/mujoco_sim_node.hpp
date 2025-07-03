@@ -17,4 +17,6 @@ private:
 
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+
+    std::thread gui_thread_;
 };

@@ -3,6 +3,7 @@
 #include "mujoco/mujoco.h"
 #include <GLFW/glfw3.h>
 
+void spin_mujoco_gui(mjModel* m, mjData* d);
 class MujocoGUI {
 public:
     MujocoGUI(mjModel** m, mjData** d)

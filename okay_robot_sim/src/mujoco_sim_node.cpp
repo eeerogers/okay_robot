@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "okay_robot_sim/mujoco_gui.hpp"
 #include "okay_robot_sim/mujoco_sim_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -25,6 +26,10 @@ MujocoSimNode::MujocoSimNode()
     }
     this->d_ = mj_makeData(m_);
 
+    // spin off gui thread
+    auto mujoco_gui_thread = std::bind(spin_mujoco_gui, this->m_, this->d_);
+    this->gui_thread_ = std::thread(mujoco_gui_thread);
+
     // set loop frequency
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::duration<double>(this->m_->opt.timestep));
@@ -39,6 +44,7 @@ MujocoSimNode::~MujocoSimNode()
 {
     mj_deleteData(this->d_);
     mj_deleteModel(this->m_);
+    this->gui_thread_.join();
 }
 
 void MujocoSimNode::timer_callback()

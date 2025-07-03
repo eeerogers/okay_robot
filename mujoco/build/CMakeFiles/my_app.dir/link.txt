@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/my_app.dir/main.cpp.o CMakeFiles/my_app.dir/src/mujoco_gui.cpp.o -o my_app   -L/opt/mujoco-3.3.2/lib  -Wl,-rpath,/opt/mujoco-3.3.2/lib -lmujoco /usr/lib/x86_64-linux-gnu/libglfw.so.3.3 /usr/lib/x86_64-linux-gnu/libGL.so 

@@ -1,3 +1,0 @@
-/home/eric/projects/ros_sandbox/src/ok_robot/mujoco/build/CMakeFiles/my_app.dir
-/home/eric/projects/ros_sandbox/src/ok_robot/mujoco/build/CMakeFiles/edit_cache.dir
-/home/eric/projects/ros_sandbox/src/ok_robot/mujoco/build/CMakeFiles/rebuild_cache.dir

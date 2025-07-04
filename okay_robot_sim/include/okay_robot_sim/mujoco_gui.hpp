@@ -2,17 +2,19 @@
 
 #include "mujoco/mujoco.h"
 #include <GLFW/glfw3.h>
+#include <mutex>
 
-void spin_mujoco_gui(mjModel* m, mjData* d);
+void spin_mujoco_gui(mjModel* m, mjData* d, std::mutex* mutex);
 class MujocoGUI {
 public:
-    MujocoGUI(mjModel** m, mjData** d)
+    MujocoGUI(mjModel** m, mjData** d, std::mutex& mutex)
         : m(m)
-        , d(d) { };
+        , d(d)
+        , mutex_(mutex) { };
+    ~MujocoGUI();
 
     int init();
     void update();
-    void free();
 
     bool should_close();
 
@@ -27,6 +29,7 @@ private:
 
     mjModel** m;
     mjData** d;
+    std::mutex& mutex_;
 
     mjvScene scene;
     mjvCamera camera;

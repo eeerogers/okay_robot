@@ -2,10 +2,12 @@
 #include "okay_robot_sim/mujoco_gui.hpp"
 #include "mujoco/mujoco.h"
 #include <GLFW/glfw3.h>
+#include <mutex>
+#include <thread>
 
-void spin_mujoco_gui(mjModel* m, mjData* d)
+void spin_mujoco_gui(mjModel* m, mjData* d, std::mutex* mutex)
 {
-    MujocoGUI mujoco_gui(&m, &d);
+    MujocoGUI mujoco_gui(&m, &d, *mutex);
     if (!mujoco_gui.init()) {
         printf("error initializing mujoco gui\n");
         return;
@@ -13,9 +15,15 @@ void spin_mujoco_gui(mjModel* m, mjData* d)
 
     while (!mujoco_gui.should_close()) {
         mujoco_gui.update();
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
+}
 
-    mujoco_gui.free();
+MujocoGUI::~MujocoGUI()
+{
+    mjv_freeScene(&this->scene);
+    mjr_freeContext(&this->context);
+    glfwTerminate();
 }
 
 int MujocoGUI::init()
@@ -60,6 +68,7 @@ int MujocoGUI::init()
 
 void MujocoGUI::update()
 {
+    std::lock_guard<std::mutex> lock(this->mutex_);
     mjv_updateScene(
         *this->m, *this->d, &this->option, nullptr, &this->camera, mjCAT_ALL, &this->scene);
 
@@ -71,13 +80,6 @@ void MujocoGUI::update()
 
     glfwSwapBuffers(this->window);
     glfwPollEvents();
-}
-
-void MujocoGUI::free()
-{
-    mjv_freeScene(&this->scene);
-    mjr_freeContext(&this->context);
-    glfwTerminate();
 }
 
 bool MujocoGUI::should_close() { return glfwWindowShouldClose(this->window); }

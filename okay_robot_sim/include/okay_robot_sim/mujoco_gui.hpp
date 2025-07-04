@@ -7,9 +7,9 @@
 void spin_mujoco_gui(mjModel* m, mjData* d, std::mutex* mutex);
 class MujocoGUI {
 public:
-    MujocoGUI(mjModel** m, mjData** d, std::mutex& mutex)
-        : m(m)
-        , d(d)
+    MujocoGUI(mjModel* m, mjData* d, std::mutex& mutex)
+        : m_(m)
+        , d_(d)
         , mutex_(mutex) { };
     ~MujocoGUI();
 
@@ -27,18 +27,18 @@ private:
     static void mouse_button_callback(GLFWwindow* window, int button, int act, int mods);
     static void mouse_scroll_callback(GLFWwindow* window, double x_offset, double y_offset);
 
-    mjModel** m;
-    mjData** d;
+    mjModel* m_;
+    mjData* d_;
     std::mutex& mutex_;
 
-    mjvScene scene;
-    mjvCamera camera;
-    mjvOption option;
-    mjrContext context;
-    GLFWwindow* window;
+    mjvScene scene_;
+    mjvCamera camera_;
+    mjvOption option_;
+    mjrContext context_;
+    GLFWwindow* window_;
 
-    int button_left;
-    int button_right;
-    double last_x;
-    double last_y;
+    int button_left_ = 0;
+    int button_right_ = 0;
+    double last_x_ = 0;
+    double last_y_ = 0;
 };

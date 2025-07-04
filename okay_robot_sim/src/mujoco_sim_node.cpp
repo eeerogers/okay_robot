@@ -69,8 +69,6 @@ void MujocoSimNode::timer_callback()
 void MujocoSimNode::tidy_bot_subscriber_callback(
     const okay_robot_msgs::msg::TidyBotCmd::SharedPtr msg)
 {
-    RCLCPP_INFO(this->get_logger(), "Received tidy_bot_cmd message");
-
     // TODO: make this less shitty, obviously
     mjtNum new_base_ctrl[]
         = { msg->x_pos, msg->y_pos, msg->theta, msg->joints[0], msg->joints[1], msg->joints[2],

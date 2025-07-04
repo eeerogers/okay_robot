@@ -4,6 +4,7 @@
 #include "okay_robot_msgs/msg/tidy_bot_cmd.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
+#include <atomic>
 #include <mutex>
 
 class MujocoSimNode : public rclcpp::Node {
@@ -18,6 +19,7 @@ private:
     mjModel* m_;
     mjData* d_;
     std::mutex mutex_;
+    std::atomic<bool> shutdown_flag_;
 
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;

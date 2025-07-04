@@ -2,18 +2,19 @@
 #include "okay_robot_sim/mujoco_gui.hpp"
 #include "mujoco/mujoco.h"
 #include <GLFW/glfw3.h>
+#include <atomic>
 #include <mutex>
 #include <thread>
 
-void spin_mujoco_gui(mjModel* m, mjData* d, std::mutex* mutex)
+void spin_mujoco_gui(mjModel* m, mjData* d, std::atomic<bool>& shutdown_flag, std::mutex& mutex)
 {
-    MujocoGUI mujoco_gui(m, d, *mutex);
+    MujocoGUI mujoco_gui(m, d, mutex);
     if (!mujoco_gui.init()) {
         printf("error initializing mujoco gui\n");
         return;
     }
 
-    while (!mujoco_gui.should_close()) {
+    while (!(mujoco_gui.should_close() || shutdown_flag.load())) {
         mujoco_gui.update();
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }

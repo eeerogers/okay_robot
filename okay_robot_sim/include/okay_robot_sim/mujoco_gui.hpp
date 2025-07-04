@@ -2,9 +2,10 @@
 
 #include "mujoco/mujoco.h"
 #include <GLFW/glfw3.h>
+#include <atomic>
 #include <mutex>
 
-void spin_mujoco_gui(mjModel* m, mjData* d, std::mutex* mutex);
+void spin_mujoco_gui(mjModel* m, mjData* d, std::atomic<bool>& shutdown_flag, std::mutex& mutex);
 class MujocoGUI {
 public:
     MujocoGUI(mjModel* m, mjData* d, std::mutex& mutex)

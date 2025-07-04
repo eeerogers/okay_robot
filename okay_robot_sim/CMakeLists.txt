@@ -22,6 +22,8 @@ link_directories(${MUJOCO_PATH}/lib)
 set(SOURCES src/run_sim_node.cpp src/mujoco_sim_node.cpp src/mujoco_gui.cpp)
 add_executable(mujoco_sim_node ${SOURCES})
 
+target_compile_options(mujoco_sim_node PRIVATE -Wno-unused-parameter)
+
 ament_target_dependencies(mujoco_sim_node okay_robot_msgs rclcpp std_msgs)
 target_link_libraries(mujoco_sim_node glfw OpenGL::GL ${MUJOCO_PATH}/lib/libmujoco.so)
 

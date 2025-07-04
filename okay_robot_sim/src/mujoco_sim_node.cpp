@@ -29,9 +29,9 @@ MujocoSimNode::MujocoSimNode()
     this->d_ = mj_makeData(m_);
 
     // spin off gui thread
-    this->shutdown_flag_.store(false);
+    this->gui_shutdown_flag_.store(false);
     auto mujoco_gui_thread = std::bind(spin_mujoco_gui, this->m_, this->d_,
-        std::ref(this->shutdown_flag_), std::ref(this->mutex_));
+        std::ref(this->gui_shutdown_flag_), std::ref(this->mutex_));
     this->gui_thread_ = std::thread(mujoco_gui_thread);
 
     // set loop frequency
@@ -48,7 +48,7 @@ MujocoSimNode::MujocoSimNode()
 
 MujocoSimNode::~MujocoSimNode()
 {
-    this->shutdown_flag_.store(true);
+    this->gui_shutdown_flag_.store(true);
     this->gui_thread_.join();
 
     mj_deleteData(this->d_);

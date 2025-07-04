@@ -3,21 +3,23 @@
 #include "mujoco/mujoco.h"
 #include <GLFW/glfw3.h>
 #include <atomic>
+#include <functional>
 #include <mutex>
+#include <stdexcept>
 #include <thread>
 
 void spin_mujoco_gui(mjModel* m, mjData* d, std::atomic<bool>& shutdown_flag, std::mutex& mutex)
 {
     MujocoGUI mujoco_gui(m, d, mutex);
-    if (!mujoco_gui.init()) {
-        printf("error initializing mujoco gui\n");
-        return;
-    }
+    mujoco_gui.init();
 
     while (!(mujoco_gui.should_close() || shutdown_flag.load())) {
         mujoco_gui.update();
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
+
+    // set flag to true to signal that the gui has shut down
+    shutdown_flag.store(true);
 }
 
 MujocoGUI::~MujocoGUI()
@@ -27,18 +29,16 @@ MujocoGUI::~MujocoGUI()
     glfwTerminate();
 }
 
-int MujocoGUI::init()
+void MujocoGUI::init()
 {
     // init glfw
     if (!glfwInit()) {
-        printf("error initializing GLFW\n");
-        return 0;
+        throw std::runtime_error("error initializing GLFW");
     }
 
     this->window_ = glfwCreateWindow(1200, 900, "MuJoCo Sim", nullptr, nullptr);
     if (!this->window_) {
-        printf("failed to create GLFW window\n");
-        return 0;
+        throw std::runtime_error("failed to create GLFW window");
     }
 
     glfwMakeContextCurrent(this->window_);
@@ -57,14 +57,11 @@ int MujocoGUI::init()
     mjr_defaultContext(&this->context_);
 
     if (!this->m_) {
-        printf("mjModel not set before init, cannot proceed\n");
-        return 0;
+        throw std::runtime_error("mjModel not set before init, cannot proceed");
     }
 
     mjv_makeScene(this->m_, &this->scene_, 2000);
     mjr_makeContext(this->m_, &this->context_, mjFONTSCALE_150);
-
-    return 1;
 }
 
 void MujocoGUI::update()

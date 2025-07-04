@@ -19,7 +19,7 @@ private:
     mjModel* m_;
     mjData* d_;
     std::mutex mutex_;
-    std::atomic<bool> shutdown_flag_;
+    std::atomic<bool> gui_shutdown_flag_;
 
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;

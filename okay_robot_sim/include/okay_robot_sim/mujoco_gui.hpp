@@ -14,7 +14,7 @@ public:
         , mutex_(mutex) { };
     ~MujocoGUI();
 
-    int init();
+    void init();
     void update();
 
     bool should_close();

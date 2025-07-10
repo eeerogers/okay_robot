@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "okay_robot_description/descriptions.hpp"
 #include "okay_robot_msgs/msg/tidy_bot_cmd.hpp"
 #include "okay_robot_sim/mujoco_gui.hpp"
 #include "okay_robot_sim/mujoco_sim_node.hpp"
@@ -19,7 +20,7 @@ MujocoSimNode::MujocoSimNode()
     this->d_ = nullptr;
 
     // initialize mujoco environment
-    const char* robot_path = "/home/eric/projects/mujoco_menagerie/stanford_tidybot/scene.xml";
+    const char* robot_path = get_tidybot_xml_path().c_str();
     char errstr[500];
 
     this->m_ = mj_loadXML(robot_path, NULL, errstr, 500);

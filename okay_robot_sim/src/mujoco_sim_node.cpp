@@ -44,7 +44,7 @@ MujocoSimNode::MujocoSimNode()
     // set up pubs/subs
     this->publisher_ = this->create_publisher<std_msgs::msg::String>("hello_world", 10);
     this->tidy_bot_subscriber_ = this->create_subscription<okay_robot_msgs::msg::TidyBotCmd>(
-        "tidy_bot_cmd", 10, std::bind(&MujocoSimNode::tidy_bot_subscriber_callback, this, _1));
+        "tidybot_cmd", 10, std::bind(&MujocoSimNode::tidy_bot_subscriber_callback, this, _1));
 }
 
 MujocoSimNode::~MujocoSimNode()

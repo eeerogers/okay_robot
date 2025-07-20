@@ -17,7 +17,7 @@ target_include_directories(okay_robot_description INTERFACE
 target_link_libraries(okay_robot_description INTERFACE ament_index_cpp::ament_index_cpp)
 
 install(
-  DIRECTORY urdf/stanford_tidybot urdf/kinova_gen3 urdf/low_cost_robot_arm urdf/unitree_g1
+  DIRECTORY urdf/stanford_tidybot urdf/kinova_gen3 urdf/low_cost_robot_arm urdf/unitree_g1 urdf/
   DESTINATION share/${PROJECT_NAME}
 )
 

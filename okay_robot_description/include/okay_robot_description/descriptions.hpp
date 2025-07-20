@@ -10,6 +10,12 @@ inline const std::string& get_package_dir()
     return package_dir;
 }
 
+inline const std::string& get_test_xml_path()
+{
+    static const std::string path = get_package_dir() + "/scene.xml";
+    return path;
+}
+
 inline const std::string& get_jaco3_xml_path()
 {
     static const std::string path = get_package_dir() + "/kinova_gen3/scene.xml";

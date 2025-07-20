@@ -20,7 +20,7 @@ MujocoSimNode::MujocoSimNode()
     this->d_ = nullptr;
 
     // initialize mujoco environment
-    const char* robot_path = get_tidybot_xml_path().c_str();
+    const char* robot_path = get_test_xml_path().c_str();
     char errstr[500];
 
     this->m_ = mj_loadXML(robot_path, NULL, errstr, 500);

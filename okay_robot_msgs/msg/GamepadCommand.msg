@@ -6,7 +6,11 @@ float32 l_trigger
 float32 r_trigger
 
 bool dpad_up
+bool dpad_up_left
+bool dpad_up_right
 bool dpad_down
+bool dpad_down_left
+bool dpad_down_right
 bool dpad_left
 bool dpad_right
 

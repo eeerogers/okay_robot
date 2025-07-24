@@ -75,31 +75,91 @@ void set_dpad(okay_robot_msgs::msg::GamepadCommand* msg, int val, bool state)
     switch (val) {
     case static_cast<int>(gamepad_dpad::DPAD_NONE):
         msg->dpad_down = false;
+        msg->dpad_down_left = false;
+        msg->dpad_down_right = false;
         msg->dpad_up = false;
+        msg->dpad_up_left = false;
+        msg->dpad_up_right = false;
         msg->dpad_right = false;
         msg->dpad_left = false;
         break;
     case static_cast<int>(gamepad_dpad::DPAD_D):
         msg->dpad_down = state;
+        msg->dpad_down_left = false;
+        msg->dpad_down_right = false;
         msg->dpad_up = false;
+        msg->dpad_up_left = false;
+        msg->dpad_up_right = false;
+        msg->dpad_right = false;
+        msg->dpad_left = false;
+        break;
+    case static_cast<int>(gamepad_dpad::DPAD_DL):
+        msg->dpad_down = false;
+        msg->dpad_down_left = state;
+        msg->dpad_down_right = false;
+        msg->dpad_up = false;
+        msg->dpad_up_left = false;
+        msg->dpad_up_right = false;
+        msg->dpad_right = false;
+        msg->dpad_left = false;
+        break;
+    case static_cast<int>(gamepad_dpad::DPAD_DR):
+        msg->dpad_down = false;
+        msg->dpad_down_left = false;
+        msg->dpad_down_right = state;
+        msg->dpad_up = false;
+        msg->dpad_up_left = false;
+        msg->dpad_up_right = false;
         msg->dpad_right = false;
         msg->dpad_left = false;
         break;
     case static_cast<int>(gamepad_dpad::DPAD_U):
         msg->dpad_down = false;
+        msg->dpad_down_left = false;
+        msg->dpad_down_right = false;
         msg->dpad_up = state;
+        msg->dpad_up_left = false;
+        msg->dpad_up_right = false;
+        msg->dpad_right = false;
+        msg->dpad_left = false;
+        break;
+    case static_cast<int>(gamepad_dpad::DPAD_UL):
+        msg->dpad_down = false;
+        msg->dpad_down_left = false;
+        msg->dpad_down_right = false;
+        msg->dpad_up = false;
+        msg->dpad_up_left = state;
+        msg->dpad_up_right = false;
+        msg->dpad_right = false;
+        msg->dpad_left = false;
+        break;
+    case static_cast<int>(gamepad_dpad::DPAD_UR):
+        msg->dpad_down = false;
+        msg->dpad_down_left = false;
+        msg->dpad_down_right = false;
+        msg->dpad_up = false;
+        msg->dpad_up_left = false;
+        msg->dpad_up_right = state;
         msg->dpad_right = false;
         msg->dpad_left = false;
         break;
     case static_cast<int>(gamepad_dpad::DPAD_R):
         msg->dpad_down = false;
+        msg->dpad_down_left = false;
+        msg->dpad_down_right = false;
         msg->dpad_up = false;
+        msg->dpad_up_left = false;
+        msg->dpad_up_right = false;
         msg->dpad_right = state;
         msg->dpad_left = false;
         break;
     case static_cast<int>(gamepad_dpad::DPAD_L):
         msg->dpad_down = false;
+        msg->dpad_down_left = false;
+        msg->dpad_down_right = false;
         msg->dpad_up = false;
+        msg->dpad_up_left = false;
+        msg->dpad_up_right = false;
         msg->dpad_right = false;
         msg->dpad_left = state;
         break;

@@ -38,7 +38,7 @@ enum gamepad_dpad {
     DPAD_D = 4,
     DPAD_DL = 12,
     DPAD_R = 2,
-    DPAD_RD = 6,
+    DPAD_DR = 6,
     DPAD_L = 8,
     DPAD_UL = 9,
 };

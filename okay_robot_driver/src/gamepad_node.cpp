@@ -45,24 +45,18 @@ void GamepadNode::timer_callback()
     while (SDL_PollEvent(&this->event_)) {
         switch (this->event_.type) {
         case SDL_JOYAXISMOTION:
-            RCLCPP_INFO(this->get_logger(), "axis %d: %d", this->event_.jaxis.axis,
-                this->event_.jaxis.value);
             set_axis(&this->gamepad_state_, this->event_.jaxis.axis, this->event_.jaxis.value);
             break;
 
         case SDL_JOYHATMOTION:
-            RCLCPP_INFO(
-                this->get_logger(), "dpad %d: %d", this->event_.jhat.hat, this->event_.jhat.value);
             set_dpad(&this->gamepad_state_, this->event_.jhat.value, true);
             break;
 
         case SDL_JOYBUTTONDOWN:
-            RCLCPP_INFO(this->get_logger(), "button: %d", this->event_.jbutton.button);
             set_button(&this->gamepad_state_, this->event_.jbutton.button, true);
             break;
 
         case SDL_JOYBUTTONUP:
-            RCLCPP_INFO(this->get_logger(), "button: %d", this->event_.jbutton.button);
             set_button(&this->gamepad_state_, this->event_.jbutton.button, false);
             break;
 

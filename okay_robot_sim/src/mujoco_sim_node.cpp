@@ -65,6 +65,10 @@ void MujocoSimNode::timer_callback()
     auto message = std_msgs::msg::String();
     message.data = "joint 0: " + std::to_string(this->d_->qpos[0]);
     this->publisher_->publish(message);
+
+    if (this->gui_shutdown_flag_.load()) {
+        std::exit(0);
+    }
 }
 
 void MujocoSimNode::tidy_bot_subscriber_callback(

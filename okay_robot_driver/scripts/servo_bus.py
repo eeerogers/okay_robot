@@ -1,0 +1,201 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from enum import IntEnum
+from typing import List
+
+import serial
+
+PACKET_HEADER = [0xFF, 0xFF]
+ALL_SERVO_IDS = 0xFE
+
+
+# packet structure
+# Packet ID: 0 ~ 253
+# Length: num parameters + 2
+# Checksum: ~(ID + Length + Instruction + Param1 + ... + Param N)
+
+# instruction packet:
+# Header 1 | Header 2 | Packet ID | Length | Instruction | Param 1 ... Param N | Checksum
+# 0xFF     | 0xFF     | 0x00      | 0x00   | 0x00        | 0x00    ... 0x00    | 0x00
+
+# return packet:
+# Header 1 | Header 2 | Packet ID | Length | Error | Param 1 ... Param N | Checksum
+# 0xFF     | 0xFF     | 0x00      | 0x00   | 0x00  | 0x00    ... 0x00    | 0x00
+
+
+class Instruction(IntEnum):
+    PING = 0x01
+    READ_DATA = 0x02
+    WRITE_DATA = 0x03
+    REGWRITE_DATA = 0x04
+    ACTION = 0x05
+    SYNCREAD_DATA = 0x82
+    SYNCWRITE_DATA = 0x83
+    RESET = 0x06
+
+
+class Register(IntEnum):
+    ID = 0x05
+    BAUDRATE = 0x06
+    RETURN_DELAY = 0x07
+    RESPONSE_STATUS_LEVEL = 0x08
+    MINIMUM_ANGLE = 0x09  # 2 bytes
+    MAXIMUM_ANGLE = 0x0B  # 2 bytes
+    MAXIMUM_TEMPERATURE = 0x0D
+    MAXIMUM_INPUT_VOLTAGE = 0x0E
+    MAXIMUM_TORQUE = 0x10  # 2 bytes
+    PHASE = 0x12
+    UNLOADING_CONDITIONS = 0x13
+    LED_ALARM_CONDITIONS = 0x14
+    POSITION_LOOP_P = 0x15
+    POSITION_LOOP_D = 0x16
+    POSITION_LOOP_I = 0x17
+    MINIMUM_STARTING_FORCE = 0x18  # 2 bytes
+    CLOCKWISE_INSENSITIVE_ZONE = 0x1A
+    ANTICLOCKWISE_INSENSITIVE_ZONE = 0x1B
+    PROTECTION_CURRENT = 0x1C  # 2 bytes
+    ANGLE_RESOLUTION = 0x1E
+    POSITION_CORRECTION = 0x1F  # 2 bytes
+    OPERATION_MODE = 0x21
+    PROTECTION_TORQUE = 0x22
+    PROTECTION_TIME = 0x23
+    OVERLOAD_TORQUE = 0x24
+    SPEED_CLOSED_LOOP_P = 0x25
+    OVERCURRENT_PROTECTION_TIME = 0x26
+    SPEED_CLOSED_LOOP_I = 0x27
+    TORQUE_SWITCH = 0x28
+    ACCELERATION = 0x29
+    TARGET_LOCATION = 0x2A  # 2 bytes
+    OPERATION_TIME = 0x2C  # 2 bytes
+    OPERATION_SPEED = 0x2E  # 2 bytes
+    TORQUE_LIMIT = 0x30  # 2 bytes
+    LOCK_FLAG = 0x37
+    CURRENT_LOCATION = 0x38  # 2 bytes
+    CURRENT_SPEED = 0x3A  # 2 bytes
+    CURRENT_LOAD = 0x3C  # 2 bytes
+    CURRENT_VOLTAGE = 0x3E
+    CURRENT_TEMPERATURE = 0x3F
+    ASYNC_WRITE_FLAG = 0x40
+    SERVO_STATUS = 0x41
+    MOVE_FLAG = 0x42
+    CURRENT_CURRENT = 0x45  # 2 bytes
+
+
+@dataclass
+class ServoInstruction:
+    # header
+    # servo ID
+    # data length
+    # instruction
+    # parameters[]
+    # checksum
+
+    raw: bytes
+
+    @classmethod
+    def build_instruction(
+        cls,
+        servo_id: int,
+        instruction: Instruction,
+        parameters: List[int],
+    ) -> ServoInstruction:
+        data_length = len(parameters) + 2
+        raw_data = [servo_id, data_length, instruction.value] + parameters
+        checksum = ~sum(raw_data) & 0xFF
+
+        return cls(bytes(PACKET_HEADER + raw_data + [checksum]))
+
+
+@dataclass(frozen=True)
+class ServoResponse:
+    # header
+    # servo ID
+    # data length
+    # error
+    # parameters[]
+    # checksum
+
+    raw: bytes
+
+
+class ServoBus:
+    def __init__(self, port: str, baud: int):
+        self._serial_connection = serial.Serial(port, baudrate=baud, timeout=0.1)
+        self._serial_connection.reset_input_buffer()
+
+    def ping_servo(self, id: int) -> bytes:
+        instruction = ServoInstruction.build_instruction(id, Instruction.PING, [])
+        self._serial_connection.write(instruction.raw)
+
+        return self._serial_connection.read(6)
+
+    def reset_servo(self, id: int) -> bytes:
+        instruction = ServoInstruction.build_instruction(id, Instruction.RESET, [])
+        self._serial_connection.write(instruction.raw)
+
+        return self._serial_connection.read(6)
+
+    def set_write_lock(self, id: int, enabled: bool) -> bytes:
+        instruction = ServoInstruction.build_instruction(
+            id, Instruction.WRITE_DATA, [Register.LOCK_FLAG, 0x01 if enabled else 0x00]
+        )
+        self._serial_connection.write(instruction.raw)
+
+        return self._serial_connection.read(8)
+
+    def set_servo_id(self, current_id: int, new_id: int) -> bytes:
+        instruction = ServoInstruction.build_instruction(
+            current_id, Instruction.WRITE_DATA, [Register.ID, new_id]
+        )
+        self._serial_connection.write(instruction.raw)
+
+        return self._serial_connection.read(6)
+
+    def write_position(self, id: int, position: int) -> bytes:
+        assert 0 <= position <= 4095
+        position_bytes = position.to_bytes(2, byteorder="little")
+        instruction = ServoInstruction.build_instruction(
+            id,
+            Instruction.WRITE_DATA,
+            [Register.TARGET_LOCATION, position_bytes[0], position_bytes[1]],
+        )
+        self._serial_connection.write(instruction.raw)
+
+        return self._serial_connection.read(6)
+
+    def read_message(self) -> bytes:
+        header = bytearray(self._serial_connection.read(2))
+
+        id_len_instruction = bytearray(self._serial_connection.read(3))
+        data = bytearray(self._serial_connection.read(int(id_len_instruction[1])))
+        checksum = bytearray(self._serial_connection.read(1))
+
+        return bytes(header + id_len_instruction + data + checksum)
+
+    def read_all_messages(self) -> List[bytes]:
+        all_messages: List[bytes] = list()
+        while self._serial_connection.in_waiting:
+            new_message = self._serial_connection.read(6)
+            all_messages.append(new_message)
+
+        return all_messages
+
+
+if __name__ == "__main__":
+    servo_bus = ServoBus("/dev/ttyACM0", 1_000_000)
+
+    print("PINGING ALL SERVOS")
+    for i in range(7):
+        response = servo_bus.ping_servo(i + 1)
+        print(f"ping response: {[hex(byte) for byte in response]}")
+
+    # servo_bus.write_position(ALL_SERVO_IDS, 0)
+    # time.sleep(4)
+    # servo_bus.write_position(ALL_SERVO_IDS, 4095)
+    # time.sleep(4)
+    # servo_bus.write_position(ALL_SERVO_IDS, 0)
+    # time.sleep(4)
+    # servo_bus.write_position(ALL_SERVO_IDS, 2047)
+    # time.sleep(4)
+    # servo_bus.write_position(ALL_SERVO_IDS, 0)

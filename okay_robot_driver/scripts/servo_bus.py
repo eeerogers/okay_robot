@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import List
+from typing import List, Optional
 
 import serial
 
@@ -124,19 +125,15 @@ class ServoBus:
         self._serial_connection = serial.Serial(port, baudrate=baud, timeout=0.1)
         self._serial_connection.reset_input_buffer()
 
-    def ping_servo(self, id: int) -> bytes:
+    def ping_servo(self, id: int) -> Optional[bytes]:
         instruction = ServoInstruction.build_instruction(id, Instruction.PING, [])
         self._serial_connection.write(instruction.raw)
 
-        return self._serial_connection.read(6)
+        time.sleep(0.001)
 
-    def reset_servo(self, id: int) -> bytes:
-        instruction = ServoInstruction.build_instruction(id, Instruction.RESET, [])
-        self._serial_connection.write(instruction.raw)
+        return self._serial_connection.read_all()
 
-        return self._serial_connection.read(6)
-
-    def set_write_lock(self, id: int, enabled: bool) -> bytes:
+    def _set_write_lock(self, id: int, enabled: bool) -> bytes:
         instruction = ServoInstruction.build_instruction(
             id, Instruction.WRITE_DATA, [Register.LOCK_FLAG, 0x01 if enabled else 0x00]
         )
@@ -148,9 +145,21 @@ class ServoBus:
         instruction = ServoInstruction.build_instruction(
             current_id, Instruction.WRITE_DATA, [Register.ID, new_id]
         )
+        self._set_write_lock(current_id, enabled=False)
         self._serial_connection.write(instruction.raw)
+        self._set_write_lock(new_id, enabled=True)
 
         return self._serial_connection.read(6)
+
+    def get_positions(self, id: int) -> Optional[bytes]:
+        instruction = ServoInstruction.build_instruction(
+            id, Instruction.READ_DATA, [Register.CURRENT_LOCATION, 0x02]
+        )
+        self._serial_connection.write(instruction.raw)
+
+        time.sleep(0.001)
+
+        return self._serial_connection.read_all()
 
     def write_position(self, id: int, position: int) -> bytes:
         assert 0 <= position <= 4095
@@ -164,31 +173,23 @@ class ServoBus:
 
         return self._serial_connection.read(6)
 
-    def read_message(self) -> bytes:
-        header = bytearray(self._serial_connection.read(2))
-
-        id_len_instruction = bytearray(self._serial_connection.read(3))
-        data = bytearray(self._serial_connection.read(int(id_len_instruction[1])))
-        checksum = bytearray(self._serial_connection.read(1))
-
-        return bytes(header + id_len_instruction + data + checksum)
-
-    def read_all_messages(self) -> List[bytes]:
-        all_messages: List[bytes] = list()
-        while self._serial_connection.in_waiting:
-            new_message = self._serial_connection.read(6)
-            all_messages.append(new_message)
-
-        return all_messages
-
 
 if __name__ == "__main__":
     servo_bus = ServoBus("/dev/ttyACM0", 1_000_000)
 
-    print("PINGING ALL SERVOS")
+    print("PINGING ALL SERVOS INDIVIDUALLY")
     for i in range(7):
         response = servo_bus.ping_servo(i + 1)
-        print(f"ping response: {[hex(byte) for byte in response]}")
+        print(f"ping response: {[hex(byte) for byte in response] if response else response}")
+
+    print("PINGING ALL SERVOS SIMULTANEOUSLY")
+    response = servo_bus.ping_servo(ALL_SERVO_IDS)
+    print(f"ping response: {[hex(byte) for byte in response] if response else response}")
+
+    print("ALL SERVOS POSITIONS")
+    for i in range(7):
+        response = servo_bus.get_positions(i + 1)
+        print(f"ping response: {[hex(byte) for byte in response] if response else response}")
 
     # servo_bus.write_position(ALL_SERVO_IDS, 0)
     # time.sleep(4)

@@ -129,7 +129,7 @@ class ServoBus:
         instruction = ServoInstruction.build_instruction(id, Instruction.PING, [])
         self._serial_connection.write(instruction.raw)
 
-        time.sleep(0.001)
+        time.sleep(0.005)
 
         return self._serial_connection.read_all()
 
@@ -161,6 +161,32 @@ class ServoBus:
 
         return self._serial_connection.read_all()
 
+    def set_min_angle(self, id: int, min_angle: int) -> Optional[bytes]:
+        min_angle_bytes = min_angle.to_bytes(2, byteorder="little")
+        instruction = ServoInstruction.build_instruction(
+            id,
+            Instruction.WRITE_DATA,
+            [Register.MINIMUM_ANGLE, min_angle_bytes[0], min_angle_bytes[1]],
+        )
+        self._set_write_lock(id, enabled=False)
+        self._serial_connection.write(instruction.raw)
+        self._set_write_lock(id, enabled=True)
+
+        return self._serial_connection.read_all()
+
+    def set_max_angle(self, id: int, max_angle: int) -> Optional[bytes]:
+        max_angle_bytes = max_angle.to_bytes(2, byteorder="little")
+        instruction = ServoInstruction.build_instruction(
+            id,
+            Instruction.WRITE_DATA,
+            [Register.MAXIMUM_ANGLE, max_angle_bytes[0], max_angle_bytes[1]],
+        )
+        self._set_write_lock(id, enabled=False)
+        self._serial_connection.write(instruction.raw)
+        self._set_write_lock(id, enabled=True)
+
+        return self._serial_connection.read_all()
+
     def write_position(self, id: int, position: int) -> bytes:
         assert 0 <= position <= 4095
         position_bytes = position.to_bytes(2, byteorder="little")
@@ -189,14 +215,37 @@ if __name__ == "__main__":
     print("ALL SERVOS POSITIONS")
     for i in range(7):
         response = servo_bus.get_positions(i + 1)
-        print(f"ping response: {[hex(byte) for byte in response] if response else response}")
+        if response:
+            position = int.from_bytes([response[6], response[5]])
+            print(f"ping response: {[hex(byte) for byte in response]}")
+            print(f"servo {i + 1} position: {position}")
 
-    # servo_bus.write_position(ALL_SERVO_IDS, 0)
+    # servo_id = 7
+    # servo_bus.set_min_angle(servo_id, 3072)
+    # servo_bus.set_max_angle(servo_id, 4095)
+
+    # servo_id = 5
+    # servo_bus.set_min_angle(servo_id, 2048)
+    # servo_bus.set_max_angle(servo_id, 4095)
+
+    # servo_id = 3
+    # servo_bus.set_min_angle(servo_id, 0)
+    # servo_bus.set_max_angle(servo_id, 2048)
+
+    # servo_id = 2
+    # servo_bus.set_min_angle(servo_id, 2048)
+    # servo_bus.set_max_angle(servo_id, 4095)
+
+    # servo_id = 1
+    # servo_bus.set_min_angle(servo_id, 0)
+    # servo_bus.set_max_angle(servo_id, 2048)
+
+    # servo_id = 3
+    # max = 4095
+    # min = 0
+    # servo_bus.write_position(servo_id, min)
     # time.sleep(4)
-    # servo_bus.write_position(ALL_SERVO_IDS, 4095)
+    # servo_bus.write_position(servo_id, max)
     # time.sleep(4)
-    # servo_bus.write_position(ALL_SERVO_IDS, 0)
+    # servo_bus.write_position(servo_id, min)
     # time.sleep(4)
-    # servo_bus.write_position(ALL_SERVO_IDS, 2047)
-    # time.sleep(4)
-    # servo_bus.write_position(ALL_SERVO_IDS, 0)

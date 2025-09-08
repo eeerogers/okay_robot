@@ -11,18 +11,30 @@ find_package(okay_robot_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(SDL2 REQUIRED)
 
-set(SOURCES src/run_gamepad_node.cpp src/gamepad_node.cpp src/gamepad.cpp)
-add_executable(gamepad_node ${SOURCES})
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LibSerial REQUIRED libserial)
 
+include_directories(${LibSerial_INCLUDE_DIRS})
+link_directories(${LibSerial_LIBRARY_DIRS})
+
+add_executable(gamepad_node src/run_gamepad_node.cpp src/gamepad_node.cpp src/gamepad.cpp)
+ament_target_dependencies(gamepad_node okay_robot_msgs rclcpp)
+target_link_libraries(gamepad_node SDL2)
 target_include_directories(
   gamepad_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
 
-ament_target_dependencies(gamepad_node okay_robot_msgs rclcpp)
-target_link_libraries(gamepad_node SDL2)
+add_executable(servo_bus_node src/run_servo_bus_node.cpp src/servo_bus_node.cpp src/servo_bus.cpp)
+ament_target_dependencies(servo_bus_node rclcpp)
+target_link_libraries(servo_bus_node ${LibSerial_LIBRARIES})
+target_include_directories(
+  servo_bus_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
 
-install(TARGETS gamepad_node DESTINATION lib/${PROJECT_NAME})
+install(TARGETS gamepad_node servo_bus_node DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

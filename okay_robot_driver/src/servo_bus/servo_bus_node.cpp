@@ -1,5 +1,5 @@
-#include "okay_robot_driver/servo_bus_node.hpp"
-#include "okay_robot_driver/servo_bus.hpp"
+#include "okay_robot_driver/servo_bus/servo_bus_node.hpp"
+#include "okay_robot_driver/servo_bus/servo_bus.hpp"
 
 ServoBusNode::ServoBusNode()
     : Node("servo_bus_node")

@@ -1,4 +1,4 @@
-#include "okay_robot_driver/servo_bus.hpp"
+#include "okay_robot_driver/servo_bus/servo_bus.hpp"
 #include <numeric>
 
 void print_message(std::vector<uint8_t> message)

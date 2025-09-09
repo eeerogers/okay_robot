@@ -1,5 +1,5 @@
-#include "okay_robot_driver/gamepad_node.hpp"
-#include "okay_robot_driver/gamepad.hpp"
+#include "okay_robot_driver/gamepad/gamepad_node.hpp"
+#include "okay_robot_driver/gamepad/gamepad.hpp"
 #include "okay_robot_msgs/msg/gamepad_command.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include <SDL2/SDL.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "okay_robot_driver/servo_bus.hpp"
+#include "okay_robot_driver/servo_bus/servo_bus.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 class ServoBusNode : public rclcpp::Node {
@@ -16,4 +16,6 @@ private:
 
     ServoBus servo_bus_;
     rclcpp::TimerBase::SharedPtr timer_;
+    // servo command subscriber
+    // servo state publisher
 };

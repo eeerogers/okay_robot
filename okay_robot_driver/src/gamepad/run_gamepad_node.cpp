@@ -1,4 +1,4 @@
-#include "okay_robot_driver/gamepad_node.hpp"
+#include "okay_robot_driver/gamepad/gamepad_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char* argv[])

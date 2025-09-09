@@ -1,4 +1,4 @@
-#include "okay_robot_driver/gamepad.hpp"
+#include "okay_robot_driver/gamepad/gamepad.hpp"
 #include "okay_robot_msgs/msg/gamepad_command.hpp"
 
 void set_button(okay_robot_msgs::msg::GamepadCommand* msg, int val, bool state)

@@ -9,6 +9,13 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
-rosidl_generate_interfaces(${PROJECT_NAME} "msg/Num.msg" "msg/TidyBotCmd.msg" "msg/GamepadCommand.msg")
+rosidl_generate_interfaces(
+  ${PROJECT_NAME}
+  "msg/Num.msg"
+  "msg/TidyBotCmd.msg"
+  "msg/GamepadCommand.msg"
+  "msg/ServoCommand.msg"
+  "msg/ServoObservation.msg"
+)
 
 ament_package()

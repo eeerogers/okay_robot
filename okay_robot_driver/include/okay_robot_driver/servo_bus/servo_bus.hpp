@@ -47,13 +47,13 @@ enum ServoRegister {
     OVERCURRENT_PROTECTION_TIME = 0x26,
     SPEED_CLOSED_LOOP_I = 0x27,
     TORQUE_SWITCH = 0x28,
-    ACCELERATION = 0x29,
+    OPERATION_ACCELERATION = 0x29,
     TARGET_LOCATION = 0x2A, // 2 bytes
     OPERATION_TIME = 0x2C, // 2 bytes
     OPERATION_SPEED = 0x2E, // 2 bytes
     TORQUE_LIMIT = 0x30, // 2 bytes
     LOCK_FLAG = 0x37,
-    CURRENT_LOCATION = 0x38, // 2 bytes
+    CURRENT_POSITION = 0x38, // 2 bytes
     CURRENT_SPEED = 0x3A, // 2 bytes
     CURRENT_LOAD = 0x3C, // 2 bytes
     CURRENT_VOLTAGE = 0x3E,

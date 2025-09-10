@@ -37,7 +37,7 @@ add_executable(
   src/servo_bus/servo_bus_node.cpp
   src/servo_bus/servo_bus.cpp
 )
-ament_target_dependencies(servo_bus_node rclcpp)
+ament_target_dependencies(servo_bus_node okay_robot_msgs rclcpp)
 target_link_libraries(servo_bus_node ${LibSerial_LIBRARIES})
 target_include_directories(
   servo_bus_node PUBLIC

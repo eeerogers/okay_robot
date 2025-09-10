@@ -16,6 +16,8 @@ rosidl_generate_interfaces(
   "msg/GamepadCommand.msg"
   "msg/ServoCommand.msg"
   "msg/ServoObservation.msg"
+  "msg/ServoBusCommand.msg"
+  "msg/ServoBusObservation.msg"
 )
 
 ament_package()

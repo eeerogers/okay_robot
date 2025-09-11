@@ -64,6 +64,16 @@ enum ServoRegister {
     CURRENT_CURRENT = 0x45, // 2 bytes
 };
 
+enum ErrorBits {
+    INPUT_VOLTAGE = 0b00000001,
+    ANGLE_LIMIT = 0b00000010,
+    OVERHEAT = 0b00000100,
+    RANGE = 0b00001000,
+    CHECKSUM = 0b00010000,
+    TORQUE = 0b00100000,
+    INSTRUCTION = 0b01000000,
+};
+
 enum MessageParseState {
     HEADER1,
     HEADER2,

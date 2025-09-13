@@ -1,6 +1,7 @@
 #include "okay_robot_driver/servo_bus/servo_bus.hpp"
 #include <numeric>
 
+/** For debugging */
 void print_message(std::vector<uint8_t> message)
 {
     printf("message: [ ");
@@ -88,6 +89,13 @@ ServoBus::~ServoBus()
     }
 };
 
+/**
+ * Opens the serial port and sets the baud rate. Will return if it fails to open the port
+ *
+ * @param port [string] the port to open
+ * @param baud [LibSerial::BaudRate] the baud rate to set for the port
+ * @return No return
+ */
 void ServoBus::init(std::string port, LibSerial::BaudRate baud)
 {
     try {
@@ -104,6 +112,13 @@ void ServoBus::init(std::string port, LibSerial::BaudRate baud)
     }
 }
 
+/**
+ * Writes data to the serial port using the DYNAMIXEL Protocol 1.0
+ *
+ * @param id [uint_t] the id of the servo to receive the message
+ * @param data [std::vector<uint8_t>] the bytes to send to the servo
+ * @return No return
+ */
 void ServoBus::write_message(uint8_t id, std::vector<uint8_t> data)
 {
     /*
@@ -128,6 +143,11 @@ void ServoBus::write_message(uint8_t id, std::vector<uint8_t> data)
     this->serial_.Write(contents);
 }
 
+/**
+ * Reads the last message from the serial port
+ *
+ * @return An array of bytes [std::vector<uint8_t>] containing the raw message data
+ */
 std::vector<uint8_t> ServoBus::read_message()
 {
     /*
@@ -155,6 +175,12 @@ std::vector<uint8_t> ServoBus::read_message()
     }
 }
 
+/**
+ * Sends a ping message to the specified servo
+ *
+ * @param id [uint8_t] the id of the servo to ping
+ * @return No return
+ */
 void ServoBus::ping(uint8_t id)
 {
     std::vector<uint8_t> contents

@@ -17,20 +17,21 @@ ServoBusNode::ServoBusNode()
         = this->create_wall_timer(duration, std::bind(&ServoBusNode::timer_callback_, this));
 
     this->publisher_ = this->create_publisher<okay_robot_msgs::msg::ServoBusObservation>(
-        "servo_observation", 10);
+        "servo_bus_observation", 10);
     this->subscriber_ = this->create_subscription<okay_robot_msgs::msg::ServoBusCommand>(
-        "servo_command", 10, std::bind(&ServoBusNode::command_callback_, this, _1));
+        "servo_bus_command", 10, std::bind(&ServoBusNode::command_callback_, this, _1));
 }
 
-// TODO: implement
 void ServoBusNode::timer_callback_()
 {
-    // get observation from servo bus and publish to ros
+    /** TODO: implement */
+    //
 }
 
-// TODO: make this more efficient
 void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand msg)
 {
+    /** TODO: make this all more efficient */
+
     int full_position;
     uint8_t position_lo;
     uint8_t position_hi;

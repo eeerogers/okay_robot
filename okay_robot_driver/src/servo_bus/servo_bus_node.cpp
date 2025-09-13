@@ -2,6 +2,7 @@
 #include "okay_robot_driver/servo_bus/servo_bus.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
 #include "okay_robot_msgs/msg/servo_bus_observation.hpp"
+#include <cmath>
 
 using std::placeholders::_1;
 
@@ -27,8 +28,23 @@ void ServoBusNode::timer_callback_()
     // get observation from servo bus and publish to ros
 }
 
-// TODO: implement
+// TODO: make this more efficient
 void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand msg)
 {
+    int full_position;
+    uint8_t position_lo;
+    uint8_t position_hi;
+
+    // servo range 0..4095
+    float conversion_factor = 4095.0 / (2.0 * M_PI);
+
     // turn commands into packets and send to servo bus
+    for (auto command : msg.commands) {
+        full_position = command.position * conversion_factor;
+        position_lo = full_position & 0xFF;
+        position_hi = (full_position >> 8) & 0xFF;
+
+        this->servo_bus_.write_message(
+            command.id, { ServoRegister::TARGET_POSITION, position_lo, position_hi });
+    }
 }

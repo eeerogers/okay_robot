@@ -14,7 +14,7 @@ private:
     void command_callback_(const okay_robot_msgs::msg::ServoBusCommand msg);
 
     double poll_freq_ = 100.0;
-    std::string port_ = "dev/ttyACM0";
+    std::string port_ = "/dev/ttyACM0";
     LibSerial::BaudRate baud_ = LibSerial::BaudRate::BAUD_1000000;
 
     ServoBus servo_bus_;

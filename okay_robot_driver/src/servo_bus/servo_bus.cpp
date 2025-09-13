@@ -99,7 +99,7 @@ void ServoBus::init(std::string port, LibSerial::BaudRate baud)
     }
 
     catch (const LibSerial::OpenFailed&) {
-        std::printf("cannot open serial connection on port %s\n", this->port_.c_str());
+        std::printf("cannot open serial connection on port %s\n", port.c_str());
         return;
     }
 }

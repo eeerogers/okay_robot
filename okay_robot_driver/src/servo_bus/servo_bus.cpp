@@ -11,8 +11,46 @@ void print_message(std::vector<uint8_t> message)
     printf("]\n");
 }
 
+/**
+ * Builds and formats a packet to send to the servo bus
+ *
+ * @param id [uint8_t] the id of the servo to receive the packet
+ * @param instruction [uint8_t] the instruction code to send
+ * @param data [std::vector<uint8_t>] the data to send with the packet
+ * @return A properly formatted array of bytes [std::vector<uint8_t>]
+ */
+std::vector<uint8_t> build_packet(uint8_t id, uint8_t instruction, std::vector<uint8_t> data)
+{
+    /*
+    packet structure:
+        Packet ID: 0 ~ 253
+        Length: num parameters + 2
+        Checksum: ~(ID + Length + Instruction + Param1 + ... + Param N)
+
+    instruction packet:
+        Header 1 | Header 2 | Packet ID | Length | Instruction | Param 1 ... Param N | Checksum
+        0xFF     | 0xFF     | 0x00      | 0x00   | 0x00        | 0x00    ... 0x00    | 0x00
+    */
+
+    uint8_t data_length = data.size() + 2;
+    std::vector<uint8_t> contents
+        = { PACKET_HEADER_1, PACKET_HEADER_2, id, data_length, instruction };
+    contents.insert(contents.end(), data.begin(), data.end());
+
+    uint8_t checksum = ~std::accumulate(contents.begin() + 2, contents.end(), 0) & 0xFF;
+    contents.push_back(checksum);
+
+    return contents;
+}
+
 void MessageParser::step(uint8_t byte)
 {
+    /*
+    return packet:
+        Header 1 | Header 2 | Packet ID | Length | Error | Param 1 ... Param N | Checksum
+        0xFF     | 0xFF     | 0x00      | 0x00   | 0x00  | 0x00    ... 0x00    | 0x00
+    */
+
     switch (this->current_state_) {
     case MessageParseState::HEADER1:
         if (byte == PACKET_HEADER_1) {
@@ -119,28 +157,25 @@ void ServoBus::init(std::string port, LibSerial::BaudRate baud)
  * @param data [std::vector<uint8_t>] the bytes to send to the servo
  * @return No return
  */
-void ServoBus::write_message(uint8_t id, std::vector<uint8_t> data)
+void ServoBus::write_data(uint8_t id, std::vector<uint8_t> data)
 {
-    /*
-    packet structure:
-        Packet ID: 0 ~ 253
-        Length: num parameters + 2
-        Checksum: ~(ID + Length + Instruction + Param1 + ... + Param N)
+    std::vector<uint8_t> message = build_packet(id, ServoInstruction::WRITE_DATA, data);
+    this->serial_.Write(message);
+}
 
-    instruction packet:
-        Header 1 | Header 2 | Packet ID | Length | Instruction | Param 1 ... Param N | Checksum
-        0xFF     | 0xFF     | 0x00      | 0x00   | 0x00        | 0x00    ... 0x00    | 0x00
-    */
+/**
+ * Reads data from the register of the specified servo
+ *
+ * @param id [uint_t] the id of the servo to request data from
+ * @param data [std::vector<uint8_t>] the register and length of data to request
+ * @return The raw message containing the requested data
+ */
+std::vector<uint8_t> ServoBus::read_data(uint8_t id, std::vector<uint8_t> data)
+{
+    std::vector<uint8_t> message = build_packet(id, ServoInstruction::READ_DATA, data);
+    this->serial_.Write(message);
 
-    uint8_t data_length = data.size() + 2;
-    std::vector<uint8_t> contents
-        = { PACKET_HEADER_1, PACKET_HEADER_2, id, data_length, ServoInstruction::WRITE_DATA };
-    contents.insert(contents.end(), data.begin(), data.end());
-
-    uint8_t checksum = ~std::accumulate(contents.begin() + 2, contents.end(), 0) & 0xFF;
-    contents.push_back(checksum);
-
-    this->serial_.Write(contents);
+    return this->read_buffer();
 }
 
 /**
@@ -148,14 +183,8 @@ void ServoBus::write_message(uint8_t id, std::vector<uint8_t> data)
  *
  * @return An array of bytes [std::vector<uint8_t>] containing the raw message data
  */
-std::vector<uint8_t> ServoBus::read_message()
+std::vector<uint8_t> ServoBus::read_buffer()
 {
-    /*
-    return packet:
-        Header 1 | Header 2 | Packet ID | Length | Error | Param 1 ... Param N | Checksum
-        0xFF     | 0xFF     | 0x00      | 0x00   | 0x00  | 0x00    ... 0x00    | 0x00
-    */
-
     uint8_t read_byte;
     while (true) {
         try {

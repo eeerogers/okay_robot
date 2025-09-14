@@ -5,6 +5,7 @@
 
 #define PACKET_HEADER_1 uint8_t(0xFF)
 #define PACKET_HEADER_2 uint8_t(0xFF)
+#define ALL_SERVOS uint8_t(0xFE)
 
 enum ServoInstruction {
     PING = 0x01,
@@ -86,6 +87,7 @@ enum MessageParseState {
 };
 
 void print_message(std::vector<uint8_t> message);
+std::vector<uint8_t> build_packet(uint8_t id, uint8_t instruction, std::vector<uint8_t> data);
 
 class MessageParser {
 public:
@@ -106,8 +108,9 @@ public:
 
     void init(std::string port, LibSerial::BaudRate baud);
 
-    void write_message(uint8_t id, std::vector<uint8_t> data);
-    std::vector<uint8_t> read_message();
+    void write_data(uint8_t id, std::vector<uint8_t> data);
+    std::vector<uint8_t> read_data(uint8_t id, std::vector<uint8_t> data);
+    std::vector<uint8_t> read_buffer();
     void ping(uint8_t id);
 
 private:

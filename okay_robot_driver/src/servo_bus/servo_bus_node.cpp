@@ -25,7 +25,7 @@ ServoBusNode::ServoBusNode()
 void ServoBusNode::timer_callback_()
 {
     /** TODO: implement */
-    //
+    // send BULK_READ for Position, Speed, Load, Voltage, Temperature, Current, Is-Moving, Status
 }
 
 void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand msg)
@@ -45,7 +45,7 @@ void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand
         position_lo = full_position & 0xFF;
         position_hi = (full_position >> 8) & 0xFF;
 
-        this->servo_bus_.write_message(
+        this->servo_bus_.write_data(
             command.id, { ServoRegister::TARGET_POSITION, position_lo, position_hi });
     }
 }

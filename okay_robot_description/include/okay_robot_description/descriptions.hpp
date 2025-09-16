@@ -16,6 +16,12 @@ inline const std::string& get_test_xml_path()
     return path;
 }
 
+inline const std::string& get_okay_robot_xml_path()
+{
+    static const std::string path = get_package_dir() + "/okay_robot/scene.xml";
+    return path;
+}
+
 inline const std::string& get_jaco3_xml_path()
 {
     static const std::string path = get_package_dir() + "/kinova_gen3/scene.xml";

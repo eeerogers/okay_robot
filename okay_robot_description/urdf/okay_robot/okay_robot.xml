@@ -1,0 +1,170 @@
+<?xml version="1.0" ?>
+<!-- Generated using onshape-to-robot -->
+<!-- Onshape https://cad.onshape.com/documents/1a88437c85175db425541dec/w/f09085f8d805c32bea80c0e5/e/94d6a624cf8efc45b89135d2 -->
+<mujoco model="okay_robot">
+  <compiler angle="radian" meshdir="./assets" autolimits="true"/>
+  <default>
+    <default class="okay_robot">
+      <joint frictionloss="0.1" armature="0.005"/>
+      <position kp="50" dampratio="1"/>
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2"/>
+      </default>
+      <default class="collision">
+        <geom group="3"/>
+      </default>
+    </default>
+  </default>
+  <worldbody>
+    <!-- Link base_link -->
+    <body name="base_link" pos="0 0 0" quat="1 0 0 0" childclass="okay_robot">
+      <inertial pos="0 0 0" mass="1e-09" fullinertia="1e-09 1e-09 1e-09 0 0 0"/>
+      <!-- Part base_link -->
+      <geom type="mesh" class="visual" pos="-0.00651548 2.25514e-17 0.0391" quat="1 0 0 0" mesh="base_link" material="base_link_material"/>
+      <!-- Part splined_servo_horn -->
+      <geom type="mesh" class="visual" pos="-0.00651548 2.25514e-17 0.0553" quat="0 1 0 0" mesh="splined_servo_horn" material="splined_servo_horn_material"/>
+      <!-- Part servo_body -->
+      <geom type="mesh" class="visual" pos="-0.0190155 2.25514e-17 0.0535" quat="1 0 0 0" mesh="servo_body" material="servo_body_material"/>
+      <!-- Part free_servo_horn -->
+      <geom type="mesh" class="visual" pos="-0.00651548 2.25514e-17 0.0225" quat="1 0 0 0" mesh="free_servo_horn" material="free_servo_horn_material"/>
+      <!-- Link link1 -->
+      <body name="link1" pos="-0.00651548 2.25514e-17 0.0391" quat="1 0 0 0">
+        <!-- Joint from base_link to link1 -->
+        <joint axis="0 0 1" name="joint1" type="hinge" range="-1.5707963267948966 1.5707963267948966"/>
+        <inertial pos="0 0 0" mass="1e-09" fullinertia="1e-09 1e-09 1e-09 0 0 0"/>
+        <!-- Part link1 -->
+        <geom type="mesh" class="visual" pos="0.02 0 0" quat="1 0 0 0" mesh="link1" material="link1_material"/>
+        <geom type="mesh" class="collision" pos="0.02 0 0" quat="1 0 0 0" mesh="link1" material="link1_material"/>
+        <!-- Part splined_servo_horn_2 -->
+        <geom type="mesh" class="visual" pos="0.04 -0.0162 0.042" quat="0.707107 -0.707107 0 0" mesh="splined_servo_horn" material="splined_servo_horn_material"/>
+        <!-- Part servo_body_2 -->
+        <geom type="mesh" class="visual" pos="0.04 -0.0144 0.0295" quat="0.5 0.5 -0.5 0.5" mesh="servo_body" material="servo_body_material"/>
+        <!-- Part free_servo_horn_2 -->
+        <geom type="mesh" class="visual" pos="0.04 0.0166 0.042" quat="0.707107 0.707107 -0 -0" mesh="free_servo_horn" material="free_servo_horn_material"/>
+        <!-- Link link2 -->
+        <body name="link2" pos="0.04 0 0.042" quat="0.5 0.5 -0.5 0.5">
+          <!-- Joint from link1 to link2 -->
+          <joint axis="0 0 1" name="joint2" type="hinge" range="-1.5707963267948966 1.5707963267948966"/>
+          <inertial pos="0 0 0" mass="1e-09" fullinertia="1e-09 1e-09 1e-09 0 0 0"/>
+          <!-- Part link2 -->
+          <geom type="mesh" class="visual" pos="0.075 0 -2.1684e-19" quat="0 0 -0.707107 0.707107" mesh="link2" material="link2_material"/>
+          <geom type="mesh" class="collision" pos="0.075 0 -2.1684e-19" quat="0 0 -0.707107 0.707107" mesh="link2" material="link2_material"/>
+          <!-- Part splined_servo_horn_3 -->
+          <geom type="mesh" class="visual" pos="0.15 0.028 0.0162" quat="0 -0.707107 0.707107 0" mesh="splined_servo_horn" material="splined_servo_horn_material"/>
+          <!-- Part servo_body_3 -->
+          <geom type="mesh" class="visual" pos="0.1375 0.028 0.0144" quat="1 0 0 0" mesh="servo_body" material="servo_body_material"/>
+          <!-- Part free_servo_horn_3 -->
+          <geom type="mesh" class="visual" pos="0.15 0.028 -0.0166" quat="0.707107 0 0 -0.707107" mesh="free_servo_horn" material="free_servo_horn_material"/>
+          <!-- Link link3 -->
+          <body name="link3" pos="0.15 0.028 -6.50521e-19" quat="1 0 0 0">
+            <!-- Joint from link2 to link3 -->
+            <joint axis="0 0 1" name="joint3" type="hinge" range="-1.5707963267948966 1.5707963267948966"/>
+            <inertial pos="0 0 0" mass="1e-09" fullinertia="1e-09 1e-09 1e-09 0 0 0"/>
+            <!-- Part link3 -->
+            <geom type="mesh" class="visual" pos="0.06 -0.0075 1.30104e-18" quat="0.5 -0.5 0.5 -0.5" mesh="link3" material="link3_material"/>
+            <geom type="mesh" class="collision" pos="0.06 -0.0075 1.30104e-18" quat="0.5 -0.5 0.5 -0.5" mesh="link3" material="link3_material"/>
+            <!-- Part splined_servo_horn_4 -->
+            <geom type="mesh" class="visual" pos="0.06 -0.0112 1.75613e-18" quat="5.54008e-17 6.13317e-17 -0.707107 -0.707107" mesh="splined_servo_horn" material="splined_servo_horn_material"/>
+            <!-- Part servo_body_4 -->
+            <geom type="mesh" class="visual" pos="0.0475 -0.0094 1.44694e-18" quat="0.707107 0.707107 -0 -0" mesh="servo_body" material="servo_body_material"/>
+            <!-- Part free_servo_horn_4 -->
+            <geom type="mesh" class="visual" pos="0.06 0.0216 -3.56024e-18" quat="6.03523e-18 -6.13317e-17 -0.707107 0.707107" mesh="free_servo_horn" material="free_servo_horn_material"/>
+            <!-- Link link4a -->
+            <body name="link4a" pos="0.06 0.005 -8.67362e-19" quat="0.707107 0.707107 -0 -8.53591e-111">
+              <!-- Joint from link3 to link4a -->
+              <joint axis="0 0 1" name="joint4" type="hinge" range="-3.141592653589793 3.141592653589793"/>
+              <inertial pos="0 0 0" mass="1e-09" fullinertia="1e-09 1e-09 1e-09 0 0 0"/>
+              <!-- Part link4a -->
+              <geom type="mesh" class="visual" pos="0 0 0.0775" quat="1.54597e-173 -0.707107 0 -0.707107" mesh="link4a" material="link4a_material"/>
+              <geom type="mesh" class="collision" pos="0 0 0.0775" quat="1.54597e-173 -0.707107 0 -0.707107" mesh="link4a" material="link4a_material"/>
+              <!-- Part link4b -->
+              <geom type="mesh" class="visual" pos="0 -7.37257e-18 0.0775" quat="1.54597e-173 -0.707107 0 -0.707107" mesh="link4b" material="link4b_material"/>
+              <geom type="mesh" class="collision" pos="0 -7.37257e-18 0.0775" quat="1.54597e-173 -0.707107 0 -0.707107" mesh="link4b" material="link4b_material"/>
+              <!-- Part splined_servo_horn_5 -->
+              <geom type="mesh" class="visual" pos="0 0.0162 0.155" quat="0.5 0.5 -0.5 0.5" mesh="splined_servo_horn" material="splined_servo_horn_material"/>
+              <!-- Part servo_body_5 -->
+              <geom type="mesh" class="visual" pos="0 0.0144 0.1425" quat="0.5 -0.5 -0.5 -0.5" mesh="servo_body" material="servo_body_material"/>
+              <!-- Part free_servo_horn_5 -->
+              <geom type="mesh" class="visual" pos="0 -0.0166 0.155" quat="0.5 -0.5 -0.5 -0.5" mesh="free_servo_horn" material="free_servo_horn_material"/>
+              <!-- Link link5 -->
+              <body name="link5" pos="0 -7.37257e-18 0.155" quat="0.5 -0.5 -0.5 -0.5">
+                <!-- Joint from link4a to link5 -->
+                <joint axis="0 0 1" name="joint5" type="hinge" range="-1.5707963267948948 1.5707963267948983"/>
+                <inertial pos="0 0 0" mass="1e-09" fullinertia="1e-09 1e-09 1e-09 0 0 0"/>
+                <!-- Part link5 -->
+                <geom type="mesh" class="visual" pos="0.023 0 1.0842e-19" quat="0.707107 -0.707107 0 4.23344e-49" mesh="link5" material="link5_material"/>
+                <geom type="mesh" class="collision" pos="0.023 0 1.0842e-19" quat="0.707107 -0.707107 0 4.23344e-49" mesh="link5" material="link5_material"/>
+                <!-- Part splined_servo_horn_6 -->
+                <geom type="mesh" class="visual" pos="0.0622 0 2.73191e-18" quat="0.5 0.5 -0.5 -0.5" mesh="splined_servo_horn" material="splined_servo_horn_material"/>
+                <!-- Part servo_body_6 -->
+                <geom type="mesh" class="visual" pos="0.0604 -0.0125 2.42273e-18" quat="0.5 0.5 0.5 0.5" mesh="servo_body" material="servo_body_material"/>
+                <!-- Part free_servo_horn_6 -->
+                <geom type="mesh" class="visual" pos="0.0294 0 -2.58446e-18" quat="0.5 -0.5 0.5 -0.5" mesh="free_servo_horn" material="free_servo_horn_material"/>
+                <!-- Link link6 -->
+                <body name="link6" pos="0.046 0 1.0842e-19" quat="0.5 0.5 0.5 0.5">
+                  <!-- Joint from link5 to link6 -->
+                  <joint axis="0 0 1" name="joint6" type="hinge" range="-3.141592653589793 3.141592653589793"/>
+                  <inertial pos="0 0 0" mass="1e-09" fullinertia="1e-09 1e-09 1e-09 0 0 0"/>
+                  <!-- Part link6 -->
+                  <geom type="mesh" class="visual" pos="0 0 0.019" quat="5.90414e-48 0.707107 0 0.707107" mesh="link6" material="link6_material"/>
+                  <geom type="mesh" class="collision" pos="0 0 0.019" quat="5.90414e-48 0.707107 0 0.707107" mesh="link6" material="link6_material"/>
+                  <!-- Part splined_servo_horn_7 -->
+                  <geom type="mesh" class="visual" pos="0.01 0.0162 0.038" quat="0.5 0.5 -0.5 0.5" mesh="splined_servo_horn" material="splined_servo_horn_material"/>
+                  <!-- Part servo_body_7 -->
+                  <geom type="mesh" class="visual" pos="-0.0025 0.0144 0.038" quat="0.707107 -0.707107 -0 -2.72368e-32" mesh="servo_body" material="servo_body_material"/>
+                  <!-- Part free_servo_horn_7 -->
+                  <geom type="mesh" class="visual" pos="0.01 -0.0166 0.038" quat="0.5 -0.5 -0.5 -0.5" mesh="free_servo_horn" material="free_servo_horn_material"/>
+                  <!-- Link finger_link -->
+                  <body name="finger_link" pos="0.01 -6.50521e-20 0.038" quat="0.707107 -0.707107 0 -3.50542e-32">
+                    <!-- Joint from link6 to finger_link -->
+                    <joint axis="0 0 1" name="joint7" type="hinge" range="0.0 1.5707963267948966"/>
+                    <inertial pos="0 0 0" mass="1e-09" fullinertia="1e-09 1e-09 1e-09 0 0 0"/>
+                    <!-- Part finger_link -->
+                    <geom type="mesh" class="visual" pos="0 0 0.000504912" quat="0.5 -0.5 0.5 -0.5" mesh="finger_link" material="finger_link_material"/>
+                    <geom type="mesh" class="collision" pos="0 0 0.000504912" quat="0.5 -0.5 0.5 -0.5" mesh="finger_link" material="finger_link_material"/>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <asset>
+    <mesh file="link4b.stl"/>
+    <mesh file="servo_body.stl"/>
+    <mesh file="link3.stl"/>
+    <mesh file="link6.stl"/>
+    <mesh file="finger_link.stl"/>
+    <mesh file="link2.stl"/>
+    <mesh file="base_link.stl"/>
+    <mesh file="link5.stl"/>
+    <mesh file="link1.stl"/>
+    <mesh file="free_servo_horn.stl"/>
+    <mesh file="splined_servo_horn.stl"/>
+    <mesh file="link4a.stl"/>
+    <material name="base_link_material" rgba="0.882353 0.572549 0.478431 1"/>
+    <material name="splined_servo_horn_material" rgba="0.901961 0.901961 0.901961 1"/>
+    <material name="servo_body_material" rgba="0.301961 0.301961 0.301961 1"/>
+    <material name="free_servo_horn_material" rgba="0.901961 0.901961 0.901961 1"/>
+    <material name="link1_material" rgba="0.917647 0.72549 0.490196 1"/>
+    <material name="link2_material" rgba="0.960784 0.835294 0.470588 1"/>
+    <material name="link3_material" rgba="0.654902 0.823529 0.576471 1"/>
+    <material name="link4a_material" rgba="0.537255 0.854902 0.827451 1"/>
+    <material name="link4b_material" rgba="0.537255 0.854902 0.827451 1"/>
+    <material name="link5_material" rgba="0.541176 0.682353 0.839216 1"/>
+    <material name="link6_material" rgba="0.768627 0.886275 0.952941 1"/>
+    <material name="finger_link_material" rgba="0.917647 0.917647 0.917647 1"/>
+  </asset>
+  <actuator>
+    <position class="okay_robot" name="joint1" joint="joint1" inheritrange="1"/>
+    <position class="okay_robot" name="joint2" joint="joint2" inheritrange="1"/>
+    <position class="okay_robot" name="joint3" joint="joint3" inheritrange="1"/>
+    <position class="okay_robot" name="joint4" joint="joint4" inheritrange="1"/>
+    <position class="okay_robot" name="joint5" joint="joint5" inheritrange="1"/>
+    <position class="okay_robot" name="joint6" joint="joint6" inheritrange="1"/>
+    <position class="okay_robot" name="joint7" joint="joint7" inheritrange="1"/>
+  </actuator>
+  <equality/>
+</mujoco>

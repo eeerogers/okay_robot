@@ -1,0 +1,13 @@
+{
+    "url": "https://cad.onshape.com/documents/1a88437c85175db425541dec/w/f09085f8d805c32bea80c0e5/e/94d6a624cf8efc45b89135d2",
+    "output_format": "mujoco",
+    "ignore": {
+        "base_link": "collision",
+        "free_servo_horn": "collision",
+        "splined_servo_horn": "collision",
+        "servo_body": "collision"
+    },
+    "output_filename": "okay_robot",
+    "assets_directory": "./assets",
+    "robot_name": "okay_robot"
+}

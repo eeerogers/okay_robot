@@ -1,0 +1,14 @@
+{
+    "configuration": "default",
+    "documentId": "31323db75b03e28bcdee984d",
+    "documentMicroversion": "3650a4fd8cc793980aa2f8e8",
+    "documentVersion": "6c85c2fed697291da25967de",
+    "elementId": "7b8ae52e4c656bffe200cbc3",
+    "fullConfiguration": "default",
+    "id": "MeIfQBTVF1Vns3Dcy",
+    "isStandardContent": false,
+    "name": "free_servo_horn <2>",
+    "partId": "JOD",
+    "suppressed": false,
+    "type": "Part"
+}

@@ -1,0 +1,14 @@
+{
+    "configuration": "default",
+    "documentId": "31323db75b03e28bcdee984d",
+    "documentMicroversion": "3650a4fd8cc793980aa2f8e8",
+    "documentVersion": "6c85c2fed697291da25967de",
+    "elementId": "e0984a4a7e181bb9e6357528",
+    "fullConfiguration": "default",
+    "id": "MSWE8nBm5EL+jrpF4",
+    "isStandardContent": false,
+    "name": "servo_body <1>",
+    "partId": "JHD",
+    "suppressed": false,
+    "type": "Part"
+}

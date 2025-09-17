@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mujoco/mujoco.h"
-#include "okay_robot_msgs/msg/tidy_bot_cmd.hpp"
+#include "okay_robot_msgs/msg/servo_bus_command.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include <atomic>
@@ -14,7 +14,7 @@ public:
 
 private:
     void timer_callback();
-    void tidy_bot_subscriber_callback(const okay_robot_msgs::msg::TidyBotCmd::SharedPtr msg);
+    void servo_bus_subscriber_callback(const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg);
 
     mjModel* m_;
     mjData* d_;
@@ -23,7 +23,8 @@ private:
 
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
-    rclcpp::Subscription<okay_robot_msgs::msg::TidyBotCmd>::SharedPtr tidy_bot_subscriber_;
+    rclcpp::Subscription<okay_robot_msgs::msg::ServoBusCommand>::SharedPtr
+        servo_bus_command_subscriber_;
 
     std::thread gui_thread_;
 };

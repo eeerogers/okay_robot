@@ -4,7 +4,7 @@
 #include <string>
 
 #include "okay_robot_description/descriptions.hpp"
-#include "okay_robot_msgs/msg/tidy_bot_cmd.hpp"
+#include "okay_robot_msgs/msg/servo_bus_command.hpp"
 #include "okay_robot_sim/mujoco_gui.hpp"
 #include "okay_robot_sim/mujoco_sim_node.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -20,7 +20,7 @@ MujocoSimNode::MujocoSimNode()
     this->d_ = nullptr;
 
     // initialize mujoco environment
-    const char* robot_path = get_test_xml_path().c_str();
+    const char* robot_path = get_okay_robot_xml_path().c_str();
     char errstr[500];
 
     this->m_ = mj_loadXML(robot_path, NULL, errstr, 500);
@@ -43,8 +43,9 @@ MujocoSimNode::MujocoSimNode()
 
     // set up pubs/subs
     this->publisher_ = this->create_publisher<std_msgs::msg::String>("hello_world", 10);
-    this->tidy_bot_subscriber_ = this->create_subscription<okay_robot_msgs::msg::TidyBotCmd>(
-        "tidybot_cmd", 10, std::bind(&MujocoSimNode::tidy_bot_subscriber_callback, this, _1));
+    this->servo_bus_command_subscriber_
+        = this->create_subscription<okay_robot_msgs::msg::ServoBusCommand>("servo_bus_command", 10,
+            std::bind(&MujocoSimNode::servo_bus_subscriber_callback, this, _1));
 }
 
 MujocoSimNode::~MujocoSimNode()
@@ -71,16 +72,18 @@ void MujocoSimNode::timer_callback()
     }
 }
 
-void MujocoSimNode::tidy_bot_subscriber_callback(
-    const okay_robot_msgs::msg::TidyBotCmd::SharedPtr msg)
+void MujocoSimNode::servo_bus_subscriber_callback(
+    const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg)
 {
-    // TODO: make this less shitty, obviously
-    mjtNum new_base_ctrl[]
-        = { msg->x_pos, msg->y_pos, msg->theta, msg->joints[0], msg->joints[1], msg->joints[2],
-              msg->joints[3], msg->joints[4], msg->joints[5], msg->joints[6], msg->gripper };
-
-    RCLCPP_INFO(this->get_logger(), "j2: %f", new_base_ctrl[4]);
-
     std::lock_guard<std::mutex> lock(this->mutex_);
-    std::copy(new_base_ctrl, new_base_ctrl + 11, this->d_->ctrl);
+    for (auto command : msg->commands) {
+        if (command.id > this->m_->nu) {
+            RCLCPP_WARN(this->get_logger(), "joint%d out of range: only %d total joints",
+                command.id, this->m_->nu);
+            continue;
+        }
+
+        this->d_->ctrl[command.id - 1] = command.position;
+        RCLCPP_INFO(this->get_logger(), "joint%d: %f", command.id, this->d_->ctrl[command.id - 1]);
+    }
 }

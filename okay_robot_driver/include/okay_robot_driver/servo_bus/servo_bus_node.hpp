@@ -11,7 +11,7 @@ public:
 
 private:
     void timer_callback_();
-    void command_callback_(const okay_robot_msgs::msg::ServoBusCommand msg);
+    void command_callback_(const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg);
 
     double poll_freq_ = 100.0;
     std::string port_ = "/dev/ttyACM0";

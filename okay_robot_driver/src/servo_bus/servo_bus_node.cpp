@@ -28,7 +28,7 @@ void ServoBusNode::timer_callback_()
     // send BULK_READ for Position, Speed, Load, Voltage, Temperature, Current, Is-Moving, Status
 }
 
-void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand msg)
+void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg)
 {
     /** TODO: make this all more efficient */
 
@@ -40,7 +40,7 @@ void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand
     float conversion_factor = 4095.0 / (2.0 * M_PI);
 
     // turn commands into packets and send to servo bus
-    for (auto command : msg.commands) {
+    for (auto command : msg->commands) {
         full_position = command.position * conversion_factor;
         position_lo = full_position & 0xFF;
         position_hi = (full_position >> 8) & 0xFF;

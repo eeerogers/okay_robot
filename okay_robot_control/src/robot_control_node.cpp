@@ -40,8 +40,7 @@ RobotControlNode::RobotControlNode()
     // initialize current state
     auto current_time = std::chrono::steady_clock::now();
     this->current_state_ = std::make_unique<OkayRobotState>(
-        (current_time, Eigen::VectorXd({ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }),
-            Eigen::VectorXd({ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 })));
+        current_time, Eigen::VectorXd::Zero(7), Eigen::VectorXd::Zero(7));
 }
 
 void RobotControlNode::timer_callback()

@@ -2,6 +2,7 @@
 #include "okay_robot_driver/servo_bus/servo_bus.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
 #include "okay_robot_msgs/msg/servo_bus_observation.hpp"
+#include "okay_robot_msgs/msg/servo_observation.hpp"
 #include <cmath>
 
 using std::placeholders::_1;
@@ -24,28 +25,51 @@ ServoBusNode::ServoBusNode()
 
 void ServoBusNode::timer_callback_()
 {
-    /** TODO: implement */
-    // send BULK_READ for Position, Speed, Load, Voltage, Temperature, Current, Is-Moving, Status
+    /** TODO: make this better */
+
+    std::vector<uint8_t> data_buffer;
+    int servo_position;
+    float angle_position;
+
+    std::vector<okay_robot_msgs::msg::ServoObservation> observations;
+    std::vector<uint8_t> data({ ServoRegister::CURRENT_POSITION, 0x02 });
+
+    for (uint8_t i = 1; i <= 7; i++) {
+        data_buffer = this->servo_bus_.read_data(i, data);
+        servo_position = (data_buffer[6] << 8) + data_buffer[5];
+        angle_position = servo_position * (1.0 / this->rad_to_range_);
+
+        auto new_observation = okay_robot_msgs::msg::ServoObservation();
+        new_observation.id = i;
+        new_observation.position = angle_position;
+        new_observation.status = data_buffer[4];
+
+        observations.push_back(new_observation);
+    }
+
+    auto servo_bus_observation = okay_robot_msgs::msg::ServoBusObservation();
+    servo_bus_observation.observations = observations;
+
+    this->publisher_->publish(servo_bus_observation);
 }
 
 void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg)
 {
-    /** TODO: make this all more efficient */
+    /** TODO: make this better */
 
     int full_position;
     uint8_t position_lo;
     uint8_t position_hi;
 
-    // servo range 0..4095
-    float conversion_factor = 4095.0 / (2.0 * M_PI);
-
     // turn commands into packets and send to servo bus
     for (auto command : msg->commands) {
-        full_position = command.position * conversion_factor;
+        full_position = command.position * this->rad_to_range_;
         position_lo = full_position & 0xFF;
         position_hi = (full_position >> 8) & 0xFF;
 
-        this->servo_bus_.write_data(
+        this->servo_bus_.reg_write_data(
             command.id, { ServoRegister::TARGET_POSITION, position_lo, position_hi });
     }
+
+    this->servo_bus_.execute_reg_write();
 }

@@ -17,6 +17,8 @@ private:
     std::string port_ = "/dev/ttyACM0";
     LibSerial::BaudRate baud_ = LibSerial::BaudRate::BAUD_1000000;
 
+    float rad_to_range_ = 4095.0 / (2.0 * M_PI);
+
     ServoBus servo_bus_;
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<okay_robot_msgs::msg::ServoBusObservation>::SharedPtr publisher_;

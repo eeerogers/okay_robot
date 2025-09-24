@@ -1,5 +1,6 @@
 #include "okay_robot_driver/servo_bus/servo_bus.hpp"
 #include <numeric>
+#include <thread>
 
 /** For debugging */
 void print_message(std::vector<uint8_t> message)
@@ -151,7 +152,7 @@ void ServoBus::init(std::string port, LibSerial::BaudRate baud)
 }
 
 /**
- * Writes data to the serial port using the DYNAMIXEL Protocol 1.0
+ * Writes data to the serial port
  *
  * @param id [uint_t] the id of the servo to receive the message
  * @param data [std::vector<uint8_t>] the bytes to send to the servo
@@ -160,6 +161,31 @@ void ServoBus::init(std::string port, LibSerial::BaudRate baud)
 void ServoBus::write_data(uint8_t id, std::vector<uint8_t> data)
 {
     std::vector<uint8_t> message = build_packet(id, ServoInstruction::WRITE_DATA, data);
+    this->serial_.Write(message);
+}
+
+/**
+ * Writes data to a buffer on the serial port to be executed by an Action command at a later time
+ *
+ * @param id [uint_t] the id of the servo to receive the message
+ * @param data [std::vector<uint8_t>] the bytes to send to the servo
+ * @return No return
+ */
+void ServoBus::reg_write_data(uint8_t id, std::vector<uint8_t> data)
+{
+    std::vector<uint8_t> message = build_packet(id, ServoInstruction::REG_WRITE_DATA, data);
+    this->serial_.Write(message);
+}
+
+/**
+ * Executes the data written to buffer by one or several `reg_write_data` commands
+ *
+ * @return No return
+ */
+void ServoBus::execute_reg_write()
+{
+    std::vector<uint8_t> message
+        = build_packet(ALL_SERVOS, ServoInstruction::ACTION, std::vector<uint8_t>());
     this->serial_.Write(message);
 }
 
@@ -174,6 +200,7 @@ std::vector<uint8_t> ServoBus::read_data(uint8_t id, std::vector<uint8_t> data)
 {
     std::vector<uint8_t> message = build_packet(id, ServoInstruction::READ_DATA, data);
     this->serial_.Write(message);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     return this->read_buffer();
 }

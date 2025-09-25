@@ -11,7 +11,6 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(
   ${PROJECT_NAME}
-  "msg/TidyBotCmd.msg"
   "msg/GamepadCommand.msg"
   "msg/ServoCommand.msg"
   "msg/ServoObservation.msg"

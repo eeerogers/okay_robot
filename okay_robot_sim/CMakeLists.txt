@@ -13,7 +13,6 @@ find_package(ament_cmake REQUIRED)
 find_package(okay_robot_msgs REQUIRED)
 find_package(okay_robot_description REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 
@@ -29,7 +28,7 @@ link_directories(${MUJOCO_PATH}/lib)
 
 target_compile_options(mujoco_sim_node PRIVATE -Wno-unused-parameter)
 
-ament_target_dependencies(mujoco_sim_node okay_robot_msgs okay_robot_description rclcpp std_msgs)
+ament_target_dependencies(mujoco_sim_node okay_robot_msgs okay_robot_description rclcpp)
 target_link_libraries(mujoco_sim_node glfw OpenGL::GL ${MUJOCO_PATH}/lib/libmujoco.so)
 
 install(TARGETS mujoco_sim_node DESTINATION lib/${PROJECT_NAME})

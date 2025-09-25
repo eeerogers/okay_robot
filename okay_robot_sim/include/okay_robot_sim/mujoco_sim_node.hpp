@@ -2,8 +2,8 @@
 
 #include "mujoco/mujoco.h"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
+#include "okay_robot_msgs/msg/servo_bus_observation.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
 #include <atomic>
 #include <mutex>
 
@@ -22,7 +22,7 @@ private:
     std::atomic<bool> gui_shutdown_flag_;
 
     rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+    rclcpp::Publisher<okay_robot_msgs::msg::ServoBusObservation>::SharedPtr publisher_;
     rclcpp::Subscription<okay_robot_msgs::msg::ServoBusCommand>::SharedPtr
         servo_bus_command_subscriber_;
 

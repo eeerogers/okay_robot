@@ -5,10 +5,11 @@
 
 #include "okay_robot_description/descriptions.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
+#include "okay_robot_msgs/msg/servo_bus_observation.hpp"
+#include "okay_robot_msgs/msg/servo_observation.hpp"
 #include "okay_robot_sim/mujoco_gui.hpp"
 #include "okay_robot_sim/mujoco_sim_node.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -42,7 +43,8 @@ MujocoSimNode::MujocoSimNode()
         = this->create_wall_timer(duration, std::bind(&MujocoSimNode::timer_callback, this));
 
     // set up pubs/subs
-    this->publisher_ = this->create_publisher<std_msgs::msg::String>("hello_world", 10);
+    this->publisher_ = this->create_publisher<okay_robot_msgs::msg::ServoBusObservation>(
+        "servo_bus_observation", 10);
     this->servo_bus_command_subscriber_
         = this->create_subscription<okay_robot_msgs::msg::ServoBusCommand>("servo_bus_command", 10,
             std::bind(&MujocoSimNode::servo_bus_subscriber_callback, this, _1));
@@ -63,9 +65,19 @@ void MujocoSimNode::timer_callback()
     mj_step(this->m_, this->d_);
 
     // publish data
-    auto message = std_msgs::msg::String();
-    message.data = "joint 0: " + std::to_string(this->d_->qpos[0]);
-    this->publisher_->publish(message);
+    std::vector<okay_robot_msgs::msg::ServoObservation> observations;
+    for (int i = 0; i < this->m_->nu; i++) {
+        auto new_observation = okay_robot_msgs::msg::ServoObservation();
+        new_observation.id = i + 1;
+        new_observation.position = this->d_->qpos[i];
+
+        observations.push_back(new_observation);
+    }
+
+    auto servo_bus_observation = okay_robot_msgs::msg::ServoBusObservation();
+    servo_bus_observation.observations = observations;
+
+    this->publisher_->publish(servo_bus_observation);
 
     if (this->gui_shutdown_flag_.load()) {
         std::exit(0);
@@ -84,6 +96,5 @@ void MujocoSimNode::servo_bus_subscriber_callback(
         }
 
         this->d_->ctrl[command.id - 1] = command.position;
-        RCLCPP_INFO(this->get_logger(), "joint%d: %f", command.id, this->d_->ctrl[command.id - 1]);
     }
 }

@@ -4,7 +4,7 @@ class Transform {
 public:
     Transform()
         : matrix(Eigen::Matrix4d::Identity()) { };
-    Transform(Eigen::Matrix4d mat)
+    Transform(const Eigen::Matrix4d& mat)
         : matrix(mat) { };
 
     Eigen::Matrix4d matrix;

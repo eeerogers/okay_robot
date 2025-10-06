@@ -1,8 +1,8 @@
 #pragma once
 
 #include "geometry_msgs/msg/twist.hpp"
+#include "okay_robot_common/okay_robot_state.hpp"
 #include "okay_robot_control/control_algorithms/control_loop.hpp"
-#include "okay_robot_control/okay_robot_state.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
 #include "okay_robot_msgs/msg/servo_bus_observation.hpp"
 #include "rclcpp/rclcpp.hpp"

@@ -6,7 +6,7 @@
 class OkayRobotState {
 public:
     OkayRobotState(
-        std::chrono::steady_clock::time_point t, Eigen::VectorXd pos, Eigen::VectorXd vel)
+        std::chrono::steady_clock::time_point& t, Eigen::VectorXd& pos, Eigen::VectorXd& vel)
         : time(t)
         , joint_positions(pos)
         , joint_velocities(vel) { };

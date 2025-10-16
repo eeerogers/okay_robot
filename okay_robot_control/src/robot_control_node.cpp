@@ -39,7 +39,7 @@ RobotControlNode::RobotControlNode()
 
     // initialize current state
     auto current_time = std::chrono::steady_clock::now();
-    this->current_state_ = std::make_unique<OkayRobotState>(
+    this->last_observation_ = std::make_unique<OkayRobotObservation>(
         current_time, Eigen::VectorXd::Zero(7), Eigen::VectorXd::Zero(7));
 }
 
@@ -48,8 +48,8 @@ void RobotControlNode::timer_callback()
     // spin control loop
 
     // print the state for now
-    std::string state = std::accumulate(this->current_state_->joint_positions.begin(),
-        this->current_state_->joint_positions.end(), std::string(),
+    std::string state = std::accumulate(this->last_observation_->joint_positions.begin(),
+        this->last_observation_->joint_positions.end(), std::string(),
         [](std::string& s, float n) { return s + (s.empty() ? "" : " ") + std::to_string(n); });
 
     RCLCPP_WARN(this->get_logger(), "[ %s ]", state.c_str());
@@ -65,7 +65,7 @@ void RobotControlNode::servo_bus_observation_subscriber_callback(
     const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg)
 {
     auto current_time = std::chrono::steady_clock::now();
-    this->current_state_->time = current_time;
+    Eigen::VectorXd joint_positions(this->last_observation_->joint_positions);
 
     for (auto observation : msg->observations) {
         if (observation.id > 7) {
@@ -74,6 +74,9 @@ void RobotControlNode::servo_bus_observation_subscriber_callback(
             continue;
         }
 
-        this->current_state_->joint_positions[observation.id - 1] = observation.position;
+        joint_positions[observation.id - 1] = observation.position;
     }
+
+    OkayRobotObservation new_observation(current_time, joint_positions, Eigen::VectorXd::Zero(7));
+    this->last_observation_ = std::make_unique<OkayRobotObservation>(new_observation);
 }

@@ -19,7 +19,7 @@ private:
 
     double control_freq_;
     std::unique_ptr<Controller> control_loop_;
-    std::unique_ptr<OkayRobotState> current_state_;
+    std::unique_ptr<OkayRobotObservation> last_observation_;
 
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<okay_robot_msgs::msg::ServoBusCommand>::SharedPtr

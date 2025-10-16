@@ -3,17 +3,18 @@
 #include <Eigen/Dense>
 #include <chrono>
 
-class OkayRobotState {
+class OkayRobotObservation {
 public:
-    OkayRobotState(
-        std::chrono::steady_clock::time_point t, Eigen::VectorXd pos, Eigen::VectorXd vel)
+    OkayRobotObservation(const std::chrono::steady_clock::time_point t, const Eigen::VectorXd pos,
+        const Eigen::VectorXd vel)
         : time(t)
         , joint_positions(pos)
         , joint_velocities(vel) { };
 
-    std::chrono::steady_clock::time_point time;
-    Eigen::VectorXd joint_positions;
-    Eigen::VectorXd joint_velocities;
+    const std::chrono::steady_clock::time_point time;
+
+    const Eigen::VectorXd joint_positions;
+    const Eigen::VectorXd joint_velocities;
 };
 
 class OkayRobotGoal {

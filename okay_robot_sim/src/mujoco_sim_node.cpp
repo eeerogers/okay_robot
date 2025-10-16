@@ -17,10 +17,16 @@ using std::placeholders::_1;
 MujocoSimNode::MujocoSimNode()
     : Node("mujoco_sim_node")
 {
+    // declare ros parameters
+    this->declare_parameter<bool>("run_as_puppet", false);
+    bool run_as_puppet = this->get_parameter("run_as_puppet").as_bool();
+
+    RCLCPP_INFO(this->get_logger(), "Run as puppet: %s", run_as_puppet ? "true" : "false");
+
+    // initialize mujoco environment
     this->m_ = nullptr;
     this->d_ = nullptr;
 
-    // initialize mujoco environment
     const char* robot_path = get_okay_robot_xml_path().c_str();
     char errstr[500];
 
@@ -40,14 +46,22 @@ MujocoSimNode::MujocoSimNode()
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::duration<double>(this->m_->opt.timestep));
     this->timer_
-        = this->create_wall_timer(duration, std::bind(&MujocoSimNode::timer_callback, this));
+        = this->create_wall_timer(duration, std::bind(&MujocoSimNode::timer_callback_, this));
 
     // set up pubs/subs
-    this->publisher_ = this->create_publisher<okay_robot_msgs::msg::ServoBusObservation>(
-        "servo_bus_observation", 10);
-    this->servo_bus_command_subscriber_
-        = this->create_subscription<okay_robot_msgs::msg::ServoBusCommand>("servo_bus_command", 10,
-            std::bind(&MujocoSimNode::servo_bus_subscriber_callback, this, _1));
+    if (run_as_puppet) {
+        this->servo_bus_observation_subscriber_
+            = this->create_subscription<okay_robot_msgs::msg::ServoBusObservation>(
+                "servo_bus_observation", 10,
+                std::bind(&MujocoSimNode::servo_bus_observation_subscriber_callback_, this, _1));
+    } else {
+        this->servo_bus_observation_publisher_
+            = this->create_publisher<okay_robot_msgs::msg::ServoBusObservation>(
+                "servo_bus_observation", 10);
+        this->servo_bus_command_subscriber_
+            = this->create_subscription<okay_robot_msgs::msg::ServoBusCommand>("servo_bus_command",
+                10, std::bind(&MujocoSimNode::servo_bus_command_subscriber_callback_, this, _1));
+    }
 }
 
 MujocoSimNode::~MujocoSimNode()
@@ -59,12 +73,22 @@ MujocoSimNode::~MujocoSimNode()
     mj_deleteModel(this->m_);
 }
 
-void MujocoSimNode::timer_callback()
+void MujocoSimNode::timer_callback_()
 {
     std::lock_guard<std::mutex> lock(this->mutex_);
     mj_step(this->m_, this->d_);
 
-    // publish data
+    if (this->servo_bus_observation_publisher_) {
+        this->publish_observations_();
+    }
+
+    if (this->gui_shutdown_flag_.load()) {
+        std::exit(0);
+    }
+}
+
+void MujocoSimNode::publish_observations_()
+{
     std::vector<okay_robot_msgs::msg::ServoObservation> observations;
     for (int i = 0; i < this->m_->nu; i++) {
         auto new_observation = okay_robot_msgs::msg::ServoObservation();
@@ -77,14 +101,10 @@ void MujocoSimNode::timer_callback()
     auto servo_bus_observation = okay_robot_msgs::msg::ServoBusObservation();
     servo_bus_observation.observations = observations;
 
-    this->publisher_->publish(servo_bus_observation);
-
-    if (this->gui_shutdown_flag_.load()) {
-        std::exit(0);
-    }
+    this->servo_bus_observation_publisher_->publish(servo_bus_observation);
 }
 
-void MujocoSimNode::servo_bus_subscriber_callback(
+void MujocoSimNode::servo_bus_command_subscriber_callback_(
     const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg)
 {
     std::lock_guard<std::mutex> lock(this->mutex_);
@@ -96,5 +116,20 @@ void MujocoSimNode::servo_bus_subscriber_callback(
         }
 
         this->d_->ctrl[command.id - 1] = command.position;
+    }
+}
+
+void MujocoSimNode::servo_bus_observation_subscriber_callback_(
+    const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg)
+{
+    std::lock_guard<std::mutex> lock(this->mutex_);
+    for (auto observation : msg->observations) {
+        if (observation.id > this->m_->nu) {
+            RCLCPP_WARN(this->get_logger(), "joint%d out of range: only %d total joints",
+                observation.id, this->m_->nu);
+            continue;
+        }
+
+        this->d_->ctrl[observation.id - 1] = observation.position;
     }
 }

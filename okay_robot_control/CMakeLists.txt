@@ -15,18 +15,18 @@ find_package(okay_robot_common REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 set(SOURCES src/run_control_node.cpp src/robot_control_node.cpp)
-add_executable(control_robot_node ${SOURCES})
+add_executable(robot_control_node ${SOURCES})
 
 target_include_directories(
-  control_robot_node PUBLIC
+  robot_control_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-ament_target_dependencies(control_robot_node okay_robot_msgs okay_robot_common geometry_msgs rclcpp)
-target_link_libraries(control_robot_node Eigen3::Eigen)
+ament_target_dependencies(robot_control_node okay_robot_msgs okay_robot_common geometry_msgs rclcpp)
+target_link_libraries(robot_control_node Eigen3::Eigen)
 
-install(TARGETS control_robot_node DESTINATION lib/${PROJECT_NAME})
+install(TARGETS robot_control_node DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

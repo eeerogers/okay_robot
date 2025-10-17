@@ -7,6 +7,50 @@
         "splined_servo_horn": "collision",
         "servo_body": "collision"
     },
+    "joint_properties": {
+        "joint1": {
+            "limits": [
+                0.0,
+                3.14
+            ]
+        },
+        "joint2": {
+            "limits": [
+                0.0,
+                3.14
+            ]
+        },
+        "joint3": {
+            "limits": [
+                3.14,
+                6.28
+            ]
+        },
+        "joint4": {
+            "limits": [
+                0.0,
+                6.28
+            ]
+        },
+        "joint5": {
+            "limits": [
+                0.0,
+                3.14
+            ]
+        },
+        "joint6": {
+            "limits": [
+                0.0,
+                6.28
+            ]
+        },
+        "joint7": {
+            "limits": [
+                0.0,
+                1.57
+            ]
+        }
+    },
     "output_filename": "okay_robot",
     "assets_directory": "./assets",
     "robot_name": "okay_robot"

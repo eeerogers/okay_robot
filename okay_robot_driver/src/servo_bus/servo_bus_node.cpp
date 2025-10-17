@@ -36,7 +36,9 @@ void ServoBusNode::timer_callback_()
 
     for (uint8_t i = 1; i <= 7; i++) {
         data_buffer = this->servo_bus_.read_data(i, data);
-        servo_position = (data_buffer[6] << 8) + data_buffer[5];
+
+        // need to flip the position because the servo outputs reversed direction
+        servo_position = 4095 - ((data_buffer[6] << 8) + data_buffer[5]);
         angle_position = servo_position * (1.0 / this->rad_to_range_);
 
         auto new_observation = okay_robot_msgs::msg::ServoObservation();

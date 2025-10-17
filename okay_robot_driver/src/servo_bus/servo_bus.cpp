@@ -1,16 +1,7 @@
-#include "okay_robot_driver/servo_bus/servo_bus.hpp"
 #include <numeric>
 #include <thread>
 
-/** For debugging */
-void print_message(std::vector<uint8_t> message)
-{
-    printf("message: [ ");
-    for (uint8_t byte : message) {
-        printf("0x%.2X ", byte);
-    }
-    printf("]\n");
-}
+#include "okay_robot_driver/servo_bus/servo_bus.hpp"
 
 /**
  * Builds and formats a packet to send to the servo bus

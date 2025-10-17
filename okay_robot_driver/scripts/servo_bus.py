@@ -220,22 +220,27 @@ if __name__ == "__main__":
             print(f"ping response: {[hex(byte) for byte in response]}")
             print(f"servo {i + 1} position: {position}")
 
+    # 0-90deg
     # servo_id = 7
     # servo_bus.set_min_angle(servo_id, 3072)
     # servo_bus.set_max_angle(servo_id, 4095)
 
+    # 0-180deg
     # servo_id = 5
     # servo_bus.set_min_angle(servo_id, 2048)
     # servo_bus.set_max_angle(servo_id, 4095)
 
+    # 180-360deg
     # servo_id = 3
     # servo_bus.set_min_angle(servo_id, 0)
     # servo_bus.set_max_angle(servo_id, 2048)
 
+    # 0-180deg
     # servo_id = 2
     # servo_bus.set_min_angle(servo_id, 2048)
     # servo_bus.set_max_angle(servo_id, 4095)
 
+    # 0-180deg
     # servo_id = 1
     # servo_bus.set_min_angle(servo_id, 0)
     # servo_bus.set_max_angle(servo_id, 2048)

@@ -4,12 +4,11 @@
 #include <memory>
 #include <string>
 
-#include "geometry_msgs/msg/twist.hpp"
+#include "okay_robot_control/control/direct_controller.hpp"
 #include "okay_robot_control/robot_control_node.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
 #include "okay_robot_msgs/msg/servo_bus_observation.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -19,53 +18,72 @@ RobotControlNode::RobotControlNode()
 {
     // TODO: move this out to a config
     this->control_freq_ = 30.0;
+    this->controller_ = std::make_unique<DirectController>();
 
     // set loop frequency
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::duration<double>(1.0 / this->control_freq_));
     this->timer_
-        = this->create_wall_timer(duration, std::bind(&RobotControlNode::timer_callback, this));
+        = this->create_wall_timer(duration, std::bind(&RobotControlNode::timer_callback_, this));
 
     // set up pubs/subs
     this->servo_bus_command_publisher_
         = this->create_publisher<okay_robot_msgs::msg::ServoBusCommand>("okay_robot_command", 10);
-    this->command_subscriber_
-        = this->create_subscription<geometry_msgs::msg::Twist>("okay_robot_goal", 10,
-            std::bind(&RobotControlNode::servo_bus_command_subscriber_callback, this, _1));
+    this->okay_robot_goal_subscriber_
+        = this->create_subscription<okay_robot_msgs::msg::OkayRobotGoal>("okay_robot_goal", 10,
+            std::bind(&RobotControlNode::okay_robot_goal_subscriber_callback_, this, _1));
     this->servo_bus_observation_subscriber_
         = this->create_subscription<okay_robot_msgs::msg::ServoBusObservation>(
             "okay_robot_observation", 10,
-            std::bind(&RobotControlNode::servo_bus_observation_subscriber_callback, this, _1));
+            std::bind(&RobotControlNode::servo_bus_observation_subscriber_callback_, this, _1));
 
     // initialize current state
     auto current_time = std::chrono::steady_clock::now();
     this->last_observation_ = std::make_unique<OkayRobotObservation>(
-        current_time, Eigen::VectorXd::Zero(7), Eigen::VectorXd::Zero(7));
+        current_time, std::vector<float>(7, 0.0), std::vector<float>(7, 0.0));
 }
 
-void RobotControlNode::timer_callback()
+void RobotControlNode::timer_callback_()
 {
     // spin control loop
+    OkayRobotCommand next_command
+        = this->controller_->step_control_loop(*this->last_observation_.get());
 
-    // print the state for now
-    std::string state = std::accumulate(this->last_observation_->joint_positions.begin(),
-        this->last_observation_->joint_positions.end(), std::string(),
-        [](std::string& s, float n) { return s + (s.empty() ? "" : " ") + std::to_string(n); });
-
-    RCLCPP_WARN(this->get_logger(), "[ %s ]", state.c_str());
+    // send command to servo bus
+    okay_robot_msgs::msg::ServoBusCommand bus_command
+        = this->okay_robot_to_servo_bus_command_(next_command);
+    this->servo_bus_command_publisher_->publish(bus_command);
 }
 
-void RobotControlNode::servo_bus_command_subscriber_callback(
-    const geometry_msgs::msg::Twist::SharedPtr msg)
+okay_robot_msgs::msg::ServoBusCommand RobotControlNode::okay_robot_to_servo_bus_command_(
+    OkayRobotCommand& command)
+{
+    auto bus_command = okay_robot_msgs::msg::ServoBusCommand();
+    for (int i = 0; i < command.joint_positions.size(); i++) {
+        auto servo_command = okay_robot_msgs::msg::ServoCommand();
+        servo_command.id = i + 1;
+        servo_command.position = command.joint_positions[i];
+        servo_command.enable = true;
+
+        bus_command.commands.push_back(servo_command);
+    }
+
+    return bus_command;
+}
+
+void RobotControlNode::okay_robot_goal_subscriber_callback_(
+    const okay_robot_msgs::msg::OkayRobotGoal msg)
 {
     // catch robot command
+    OkayRobotGoal new_goal(msg.joint_positions);
+    this->controller_->set_goal_state(new_goal);
 }
 
-void RobotControlNode::servo_bus_observation_subscriber_callback(
+void RobotControlNode::servo_bus_observation_subscriber_callback_(
     const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg)
 {
     auto current_time = std::chrono::steady_clock::now();
-    Eigen::VectorXd joint_positions(this->last_observation_->joint_positions);
+    std::vector<float> joint_positions(this->last_observation_->joint_positions);
 
     for (auto observation : msg->observations) {
         if (observation.id > 7) {
@@ -77,6 +95,6 @@ void RobotControlNode::servo_bus_observation_subscriber_callback(
         joint_positions[observation.id - 1] = observation.position;
     }
 
-    OkayRobotObservation new_observation(current_time, joint_positions, Eigen::VectorXd::Zero(7));
+    OkayRobotObservation new_observation(current_time, joint_positions, std::vector<float>(7, 0.0));
     this->last_observation_ = std::make_unique<OkayRobotObservation>(new_observation);
 }

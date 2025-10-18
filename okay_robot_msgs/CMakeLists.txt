@@ -16,6 +16,7 @@ rosidl_generate_interfaces(
   "msg/ServoObservation.msg"
   "msg/ServoBusCommand.msg"
   "msg/ServoBusObservation.msg"
+  "msg/OkayRobotGoal.msg"
 )
 
 ament_package()

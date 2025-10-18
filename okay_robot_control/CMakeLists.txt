@@ -12,9 +12,8 @@ find_package(Eigen3 REQUIRED)
 
 find_package(okay_robot_msgs REQUIRED)
 find_package(okay_robot_common REQUIRED)
-find_package(geometry_msgs REQUIRED)
 
-set(SOURCES src/run_control_node.cpp src/robot_control_node.cpp)
+set(SOURCES src/run_control_node.cpp src/robot_control_node.cpp src/control/direct_controller.cpp)
 add_executable(robot_control_node ${SOURCES})
 
 target_include_directories(
@@ -24,7 +23,7 @@ target_include_directories(
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-ament_target_dependencies(robot_control_node okay_robot_msgs okay_robot_common geometry_msgs rclcpp)
+ament_target_dependencies(robot_control_node okay_robot_msgs okay_robot_common rclcpp)
 target_link_libraries(robot_control_node Eigen3::Eigen)
 
 install(TARGETS robot_control_node DESTINATION lib/${PROJECT_NAME})

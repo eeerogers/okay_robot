@@ -1,5 +1,6 @@
 #include <Eigen/Dense>
 
+namespace OkayRobot {
 class Transform {
 public:
     Transform()
@@ -12,3 +13,4 @@ public:
     Transform forward(const Transform& other);
     Transform inverse();
 };
+}

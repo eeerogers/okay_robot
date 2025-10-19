@@ -3,10 +3,11 @@
 #include <chrono>
 #include <vector>
 
-class OkayRobotObservation {
+namespace OkayRobot {
+class Observation {
 public:
-    OkayRobotObservation(const std::chrono::steady_clock::time_point t,
-        const std::vector<float> pos, const std::vector<float> vel)
+    Observation(const std::chrono::steady_clock::time_point t, const std::vector<float> pos,
+        const std::vector<float> vel)
         : time(t)
         , joint_positions(pos)
         , joint_velocities(vel) { };
@@ -17,18 +18,19 @@ public:
     const std::vector<float> joint_velocities;
 };
 
-class OkayRobotCommand {
+class Command {
 public:
-    OkayRobotCommand(const std::vector<float> pos)
+    Command(const std::vector<float> pos)
         : joint_positions(pos) { };
 
     const std::vector<float> joint_positions;
 };
 
-class OkayRobotGoal {
+class Pose {
 public:
-    OkayRobotGoal(const std::vector<float> pos)
+    Pose(const std::vector<float> pos)
         : joint_positions(pos) { };
 
     const std::vector<float> joint_positions;
 };
+}

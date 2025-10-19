@@ -39,14 +39,14 @@ RobotControlNode::RobotControlNode()
 
     // initialize current state
     auto current_time = std::chrono::steady_clock::now();
-    this->last_observation_ = std::make_unique<OkayRobotObservation>(
+    this->last_observation_ = std::make_unique<OkayRobot::Observation>(
         current_time, std::vector<float>(7, 0.0), std::vector<float>(7, 0.0));
 }
 
 void RobotControlNode::timer_callback_()
 {
     // spin control loop
-    OkayRobotCommand next_command
+    OkayRobot::Command next_command
         = this->controller_->step_control_loop(*this->last_observation_.get());
 
     // send command to servo bus
@@ -56,7 +56,7 @@ void RobotControlNode::timer_callback_()
 }
 
 okay_robot_msgs::msg::ServoBusCommand RobotControlNode::okay_robot_to_servo_bus_command_(
-    OkayRobotCommand& command)
+    OkayRobot::Command& command)
 {
     auto bus_command = okay_robot_msgs::msg::ServoBusCommand();
     for (int i = 0; i < command.joint_positions.size(); i++) {
@@ -75,7 +75,7 @@ void RobotControlNode::okay_robot_goal_subscriber_callback_(
     const okay_robot_msgs::msg::OkayRobotGoal msg)
 {
     // catch robot command
-    OkayRobotGoal new_goal(msg.joint_positions);
+    OkayRobot::Pose new_goal(msg.joint_positions);
     this->controller_->set_goal_state(new_goal);
 }
 
@@ -95,6 +95,7 @@ void RobotControlNode::servo_bus_observation_subscriber_callback_(
         joint_positions[observation.id - 1] = observation.position;
     }
 
-    OkayRobotObservation new_observation(current_time, joint_positions, std::vector<float>(7, 0.0));
-    this->last_observation_ = std::make_unique<OkayRobotObservation>(new_observation);
+    OkayRobot::Observation new_observation(
+        current_time, joint_positions, std::vector<float>(7, 0.0));
+    this->last_observation_ = std::make_unique<OkayRobot::Observation>(new_observation);
 }

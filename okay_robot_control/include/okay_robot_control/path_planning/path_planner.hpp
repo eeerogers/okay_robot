@@ -4,5 +4,5 @@
 
 // protocol
 class PathPlanner {
-    virtual void set_goal_state(OkayRobotGoal& goal_state) = 0;
+    virtual void set_goal_state(OkayRobot::Pose& goal_state) = 0;
 };

@@ -19,11 +19,11 @@ private:
         const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg);
 
     okay_robot_msgs::msg::ServoBusCommand okay_robot_to_servo_bus_command_(
-        OkayRobotCommand& command);
+        OkayRobot::Command& command);
 
     double control_freq_;
     std::unique_ptr<Controller> controller_;
-    std::unique_ptr<OkayRobotObservation> last_observation_;
+    std::unique_ptr<OkayRobot::Observation> last_observation_;
 
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<okay_robot_msgs::msg::ServoBusCommand>::SharedPtr

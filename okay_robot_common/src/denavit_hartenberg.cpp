@@ -1,20 +1,22 @@
 #include "okay_robot_common/denavit_hartenberg.hpp"
 #include <Eigen/Dense>
 
-Transform DH::to_transform(const double& theta)
+namespace OkayRobot {
+Transform dh_to_transform(const DH& dh, const float& theta)
 {
-    const double new_theta = this->theta_ + theta;
+    const float new_theta = dh.theta + theta;
 
-    const double sin_theta = sin(new_theta);
-    const double cos_theta = cos(new_theta);
-    const double sin_alpha = sin(this->alpha_);
-    const double cos_alpha = cos(this->alpha_);
+    const float sin_theta = std::sin(new_theta);
+    const float cos_theta = std::cos(new_theta);
+    const float sin_alpha = std::sin(dh.alpha);
+    const float cos_alpha = std::cos(dh.alpha);
 
     /** TODO: find a cleaner way to format this? */
     Eigen::Matrix4d m;
-    m << cos_theta, -sin_theta, 0.0, this->a_, sin_theta * cos_alpha, cos_theta * cos_alpha,
-        -sin_alpha, -sin_alpha * this->d_, sin_theta * sin_alpha, cos_theta * sin_alpha, cos_alpha,
-        cos_alpha * this->d_, 0.0, 0.0, 0.0, 1.0;
+    m << cos_theta, -sin_theta, 0.0, dh.a, sin_theta * cos_alpha, cos_theta * cos_alpha, -sin_alpha,
+        -sin_alpha * dh.d, sin_theta * sin_alpha, cos_theta * sin_alpha, cos_alpha,
+        cos_alpha * dh.d, 0.0, 0.0, 0.0, 1.0;
 
     return Transform(m);
+}
 }

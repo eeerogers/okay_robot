@@ -5,6 +5,6 @@
 // protocol
 class Controller {
 public:
-    virtual void set_goal_state(const OkayRobotGoal& goal_state) = 0;
-    virtual OkayRobotCommand step_control_loop(const OkayRobotObservation& current_state) = 0;
+    virtual void set_goal_state(const OkayRobot::Pose& goal_state) = 0;
+    virtual OkayRobot::Command step_control_loop(const OkayRobot::Observation& current_state) = 0;
 };

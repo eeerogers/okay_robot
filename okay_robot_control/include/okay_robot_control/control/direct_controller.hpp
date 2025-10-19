@@ -9,9 +9,10 @@ class DirectController : public Controller {
 public:
     DirectController();
 
-    virtual void set_goal_state(const OkayRobotGoal& goal_state) override;
-    virtual OkayRobotCommand step_control_loop(const OkayRobotObservation& current_state) override;
+    virtual void set_goal_state(const OkayRobot::Pose& goal_state) override;
+    virtual OkayRobot::Command step_control_loop(
+        const OkayRobot::Observation& current_state) override;
 
 private:
-    std::unique_ptr<OkayRobotGoal> current_goal_;
+    std::unique_ptr<OkayRobot::Pose> current_goal_;
 };

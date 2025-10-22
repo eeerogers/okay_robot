@@ -1,6 +1,7 @@
 # okay_robot
 
 _still a work in progress_
+![gif](./media/okay_robot_puppet_demo.gif)
 
 ### what?
 this is a simple 6DOF desktop robot arm inspired by the lerobot arm.

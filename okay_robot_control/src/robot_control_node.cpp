@@ -4,11 +4,11 @@
 #include <memory>
 #include <string>
 
+#include "okay_robot_common/print_data.hpp"
 #include "okay_robot_control/control/direct_controller.hpp"
 #include "okay_robot_control/robot_control_node.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
 #include "okay_robot_msgs/msg/servo_bus_observation.hpp"
-#include "rclcpp/rclcpp.hpp"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -19,6 +19,7 @@ RobotControlNode::RobotControlNode()
     // TODO: move this out to a config
     this->control_freq_ = 30.0;
     this->controller_ = std::make_unique<DirectController>();
+    this->kinematics_ = std::make_unique<Kinematics>();
 
     // set loop frequency
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -28,13 +29,13 @@ RobotControlNode::RobotControlNode()
 
     // set up pubs/subs
     this->servo_bus_command_publisher_
-        = this->create_publisher<okay_robot_msgs::msg::ServoBusCommand>("okay_robot_command", 10);
+        = this->create_publisher<okay_robot_msgs::msg::ServoBusCommand>("servo_bus_command", 10);
     this->okay_robot_goal_subscriber_
         = this->create_subscription<okay_robot_msgs::msg::OkayRobotGoal>("okay_robot_goal", 10,
             std::bind(&RobotControlNode::okay_robot_goal_subscriber_callback_, this, _1));
     this->servo_bus_observation_subscriber_
         = this->create_subscription<okay_robot_msgs::msg::ServoBusObservation>(
-            "okay_robot_observation", 10,
+            "servo_bus_observation", 10,
             std::bind(&RobotControlNode::servo_bus_observation_subscriber_callback_, this, _1));
 
     // initialize current state
@@ -97,5 +98,14 @@ void RobotControlNode::servo_bus_observation_subscriber_callback_(
 
     OkayRobot::Observation new_observation(
         current_time, joint_positions, std::vector<float>(7, 0.0));
+
+    OkayRobot::Transform new_transform
+        = this->kinematics_->get_forward(OkayRobot::Pose(new_observation.joint_positions));
+    std::string joints_string = vec_to_string(new_observation.joint_positions);
+
+    RCLCPP_INFO(this->get_logger(),
+        "current position:\npose: [%s]\n\tx: %f\n\ty: %f\n\tz: %f\n----------",
+        joints_string.c_str(), new_transform.x, new_transform.y, new_transform.z);
+
     this->last_observation_ = std::make_unique<OkayRobot::Observation>(new_observation);
 }

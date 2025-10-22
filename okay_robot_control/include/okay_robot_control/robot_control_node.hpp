@@ -2,6 +2,7 @@
 
 #include "okay_robot_common/okay_robot_state.hpp"
 #include "okay_robot_control/control/controller.hpp"
+#include "okay_robot_control/kinematics.hpp"
 #include "okay_robot_msgs/msg/okay_robot_goal.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
 #include "okay_robot_msgs/msg/servo_bus_observation.hpp"
@@ -23,6 +24,7 @@ private:
 
     double control_freq_;
     std::unique_ptr<Controller> controller_;
+    std::unique_ptr<Kinematics> kinematics_;
     std::unique_ptr<OkayRobot::Observation> last_observation_;
 
     rclcpp::TimerBase::SharedPtr timer_;

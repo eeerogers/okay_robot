@@ -13,7 +13,13 @@ find_package(Eigen3 REQUIRED)
 find_package(okay_robot_msgs REQUIRED)
 find_package(okay_robot_common REQUIRED)
 
-set(SOURCES src/run_control_node.cpp src/robot_control_node.cpp src/control/direct_controller.cpp)
+set(
+  SOURCES
+  src/run_control_node.cpp
+  src/robot_control_node.cpp
+  src/kinematics.cpp
+  src/control/direct_controller.cpp
+)
 add_executable(robot_control_node ${SOURCES})
 
 target_include_directories(

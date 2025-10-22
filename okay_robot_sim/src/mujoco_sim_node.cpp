@@ -50,11 +50,17 @@ MujocoSimNode::MujocoSimNode()
 
     // set up pubs/subs
     if (run_as_puppet) {
+        RCLCPP_INFO(this->get_logger(),
+            "running in puppet mode, subscribing to servo bus driver observations");
+
         this->servo_bus_observation_subscriber_
             = this->create_subscription<okay_robot_msgs::msg::ServoBusObservation>(
                 "servo_bus_observation", 10,
                 std::bind(&MujocoSimNode::servo_bus_observation_subscriber_callback_, this, _1));
     } else {
+        RCLCPP_INFO(this->get_logger(),
+            "running in full sim mode, generating servo bus driver observations from mujoco");
+
         this->servo_bus_observation_publisher_
             = this->create_publisher<okay_robot_msgs::msg::ServoBusObservation>(
                 "servo_bus_observation", 10);

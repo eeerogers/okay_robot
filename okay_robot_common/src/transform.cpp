@@ -1,11 +1,14 @@
 #include "okay_robot_common/transform.hpp"
-#include <Eigen/Dense>
 
 namespace OkayRobot {
-Transform Transform::forward(const Transform& other)
+Eigen::Vector3f Transform::position() const { return this->matrix.block<3, 1>(0, 3); }
+
+Eigen::Matrix3f Transform::orientation() const { return this->matrix.block<3, 3>(0, 0); }
+
+Transform Transform::forward(const Transform& other) const
 {
     return Transform(this->matrix * other.matrix);
 }
 
-Transform Transform::inverse() { return Transform(this->matrix.inverse()); }
+Transform Transform::inverse() const { return Transform(this->matrix.inverse()); }
 }

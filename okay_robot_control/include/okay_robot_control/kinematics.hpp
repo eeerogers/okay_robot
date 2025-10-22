@@ -8,9 +8,13 @@
 
 class Kinematics {
 public:
-    void get_inverse(const OkayRobot::Transform& eef_transform);
+    Kinematics();
+
+    // TODO: implement vvv
+    // OkayRobot::Pose get_inverse(const OkayRobot::Transform& eef_transform);
     OkayRobot::Transform get_forward(const OkayRobot::Pose& robot_pose);
 
 private:
-    const std::vector<OkayRobot::DH> dh_chain_;
+    // TODO: make const vvv
+    std::vector<OkayRobot::DH> dh_chain_;
 };

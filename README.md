@@ -1,8 +1,7 @@
 # okay_robot
 
-_still a work in progress_
-
 <p align="center">
+    **<em>still a work in progress</em>**<br><br>
     <img src="./media/okay_robot_puppet_demo.gif">
 </p>
 

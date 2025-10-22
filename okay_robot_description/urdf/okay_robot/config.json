@@ -1,11 +1,9 @@
 {
-    "url": "https://cad.onshape.com/documents/1a88437c85175db425541dec/w/f09085f8d805c32bea80c0e5/e/94d6a624cf8efc45b89135d2",
+    "url": "https://cad.onshape.com/documents/1a88437c85175db425541dec/w/f09085f8d805c32bea80c0e5/e/55becd3b7ca1df2a8f0a7630",
     "output_format": "mujoco",
     "ignore": {
         "base_link": "collision",
-        "free_servo_horn": "collision",
-        "splined_servo_horn": "collision",
-        "servo_body": "collision"
+        "servo_reference": "collision"
     },
     "joint_properties": {
         "joint1": {

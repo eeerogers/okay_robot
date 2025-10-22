@@ -2,8 +2,9 @@
 
 _still a work in progress_
 
-
-![gif](./media/okay_robot_puppet_demo.gif)
+<p align="center">
+    <img src="./media/okay_robot_puppet_demo.gif">
+</p>
 
 
 ### what?

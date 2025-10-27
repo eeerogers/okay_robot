@@ -226,6 +226,25 @@ def main() -> None:
     #   [sin(theta2 + theta3), 0.0, -cos(theta2 + theta3)]
     # ]
 
+    # for a spherical wrist:
+    # R36 = [
+    #   [c4c5c6 - s4s6, -c4c5s6 - s4c6, c4s5]
+    #   [s4c5c6 + c4s6, -s4c5s6 + c4c6, s4s5]
+    #   [        -s5c6,           s5s6,   c5]
+    # ]
+
+    # theta4 = atan2(r13, r23)
+    # theta5 = atan2(r33, sqrt(1 - r33**2))
+    # theta6 = atan2(-r31, r32)
+
+    # where:
+    # R36 = (R03).T @ R
+    # R = [
+    #   [r11, r12, r13]
+    #   [r21, r22, r23]
+    #   [r31, r32, r33]
+    # ]
+
     mult = 1.0
     r13 = (
         rotation[0, 2] * (np.cos(theta1) * np.cos(theta2 + theta3))

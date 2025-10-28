@@ -51,12 +51,12 @@ def forward_kinematics(dh_chain: list[DH], joint_angles: list[float]) -> np.ndar
 def sp_dh_to_transform(dh: DH, i: int) -> sp.Matrix:
     theta = sp.symbols(f"theta{i}")
 
-    sin_theta = sp.sin(theta)
-    cos_theta = sp.cos(theta)
+    sin_theta = sp.sin(theta + dh.theta)
+    cos_theta = sp.cos(theta + dh.theta)
     sin_alpha = np.sin(dh.alpha)
     cos_alpha = np.cos(dh.alpha)
 
-    htm = np.array(
+    htm = sp.Matrix(
         [
             [cos_theta, -sin_theta * cos_alpha, sin_theta * sin_alpha, cos_theta * dh.a],
             [sin_theta, cos_theta * cos_alpha, -cos_theta * sin_alpha, sin_theta * dh.a],
@@ -68,132 +68,84 @@ def sp_dh_to_transform(dh: DH, i: int) -> sp.Matrix:
     return htm
 
 
-# R01
-# [
-#   [cos(theta1), 0.0, sin(theta1)],
-#   [sin(theta1), 0.0, -cos(theta1)],
-#   [0, 1.0, 0.0]
-# ]
-
-# R02
-# [
-#   [cos(theta1)*cos(theta2), -sin(theta2)*cos(theta1), sin(theta1)],
-#   [sin(theta1)*cos(theta2), -sin(theta1)*sin(theta2), -cos(theta1)],
-#   [sin(theta2), cos(theta2), 0.0]
-# ]
-
-# R03
-# [
-#   [cos(theta1)*cos(theta2 + theta3), sin(theta1), sin(theta2 + theta3)*cos(theta1)],
-#   [sin(theta1)*cos(theta2 + theta3), -cos(theta1), sin(theta1)*sin(theta2 + theta3)],
-#   [sin(theta2 + theta3), 0.0, -cos(theta2 + theta3)]
-# ]
-
-
-def sp_forward_kinematics(dh_chain: list[DH], starting_index: int = 1) -> sp.Matrix:
-    running_htm = sp.eye(4)
+def sp_fk_rotation(dh_chain: list[DH], starting_index: int = 1) -> sp.Matrix:
+    running_rotation = sp.eye(3)
     for i, dh in enumerate(dh_chain):
-        dh_htm = sp_dh_to_transform(dh, i + starting_index)
-        running_htm = sp.simplify(np.matmul(running_htm, dh_htm))
-        print(running_htm[:3, :3])
+        dh_rotation = sp_dh_to_transform(dh, i + starting_index)[:3, :3]
+        running_rotation = sp.simplify(running_rotation * dh_rotation)
 
-    return running_htm
+    return running_rotation
 
 
 def main() -> None:
-    # float d0 = 0.041;
     d0 = 0.041
     dh0 = DH(0.0, d0, 0.0, 0.0)
 
-    # float a1 = 0.040;
-    # float d1 = 0.042;
-    # float alpha1 = rad_90;
-    # float theta1 = 0.0;
-    d1 = 0.042
     a1 = 0.040
+    d1 = 0.042
     alpha1 = np.deg2rad(90.0)
     theta1 = 0.0
     dh1 = DH(a1, d1, alpha1, theta1)
 
-    # float a2_a = 0.150;
-    # float a2_b = 0.028;
-    # float phi2 = std::tan(a2_b / a2_a);
-    # float a2 = std::sqrt(a2_a * a2_a + a2_b * a2_b);
-    # float theta2 = rad_90 + phi2;
     a2_a = 0.150
     a2_b = 0.028
-    phi2 = np.atan2(a2_b, a2_a)
+    phi2 = np.atan(a2_b / a2_a)
     a2 = np.sqrt(a2_a * a2_a + a2_b * a2_b)
     theta2 = np.deg2rad(90.0) + phi2
     dh2 = DH(a2, 0.0, 0.0, theta2)
 
-    # float a3 = 0.0600;
-    # float alpha3 = rad_90;
-    # float theta3 = -phi2;
     a3 = 0.060
     alpha3 = np.deg2rad(90.0)
     theta3 = -phi2
     dh3 = DH(a3, 0.0, alpha3, theta3)
 
-    # float d4 = 0.155;
-    # float alpha4 = -rad_90;
-    # float theta4 = 0.0;
     d4 = 0.155
     alpha4 = -np.deg2rad(90.0)
     theta4 = 0.0
     dh4 = DH(0.0, d4, alpha4, theta4)
 
-    # float alpha5 = rad_90;
-    # float theta5 = 0.0;
     alpha5 = np.deg2rad(90.0)
     theta5 = 0.0
     dh5 = DH(0.0, 0.0, alpha5, theta5)
 
-    # float d6 = 0.065;
-    # float theta6 = 0.0;
     d6 = 0.065
     theta6 = 0.0
     dh6 = DH(0.0, d6, 0.0, theta6)
 
-    # float d7 = 0.079;
     d7 = 0.079
     dh7 = DH(0.0, d7, 0.0, 0.0)
 
     dh_chain = [dh0, dh1, dh2, dh3, dh4, dh5, dh6, dh7]
 
     # UNCOMMENT TO GENERATE
-    # sp_forward_kinematics(dh_chain[4:7], 4)
+    # r11, r12, r13, r21, r22, r23, r31, r32, r33 = sp.symbols("r11 r12 r13 r21 r22 r23 r31 r32 r33")
+    # sp_rotation = sp.Matrix([[r11, r12, r13], [r21, r22, r23], [r31, r32, r33]])
+    # R_b = sp.Matrix([[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]])
+    # R03 = sp_fk_rotation(dh_chain[1:4], 1)
+    # print(R03)
 
-    # R36
-    # [
-    #   [-sin(theta4)*sin(theta6) + cos(theta4)*cos(theta5)*cos(theta6), -sin(theta4)*cos(theta6) - sin(theta6)*cos(theta4)*cos(theta5), sin(theta5)*cos(theta4)],
-    #   [sin(theta4)*cos(theta5)*cos(theta6) + sin(theta6)*cos(theta4), -sin(theta4)*sin(theta6)*cos(theta5) + cos(theta4)*cos(theta6), sin(theta4)*sin(theta5)],
-    #   [-sin(theta5)*cos(theta6), sin(theta5)*sin(theta6), cos(theta5)]
-    # ]
+    # theta1 = np.deg2rad(90.0)
+    # theta2 = np.deg2rad(90.0)
+    # theta3 = np.deg2rad(270.0)
+    # theta4 = np.deg2rad(180.0)
+    # theta5 = np.deg2rad(90.0)
+    # theta6 = np.deg2rad(180.0)
 
-    # joint_angles = [
-    #     np.deg2rad(90.0),
-    #     np.deg2rad(90.0),
-    #     np.deg2rad(270.0),
-    #     np.deg2rad(180.0),
-    #     np.deg2rad(90.0),
-    #     np.deg2rad(180.0),
-    # ]
-    joint_angles = [
-        np.deg2rad(20.0),
-        np.deg2rad(0.0),
-        np.deg2rad(30.0),
-        np.deg2rad(20.0),
-        np.deg2rad(10.0),
-        np.deg2rad(0.0),
-    ]
+    theta1 = np.deg2rad(0.0)
+    theta2 = np.deg2rad(0.0)
+    theta3 = np.deg2rad(0.0)
+    theta4 = np.deg2rad(0.0)
+    theta5 = np.deg2rad(10.0)
+    theta6 = np.deg2rad(0.0)
+    print(f"theta1: {np.rad2deg(theta1)}")
+    print(f"theta2: {np.rad2deg(theta2)}")
+    print(f"theta3: {np.rad2deg(theta3)}")
+    print(f"theta4: {np.rad2deg(theta4)}")
+    print(f"theta5: {np.rad2deg(theta5)}")
+    print(f"theta6: {np.rad2deg(theta6)}")
+
+    joint_angles = [theta1, theta2, theta3, theta4, theta5, theta6]
     fk_htm = forward_kinematics(dh_chain, joint_angles)
-    print(f"theta1: {np.rad2deg(joint_angles[0])}")
-    print(f"theta2: {np.rad2deg(joint_angles[1])}")
-    print(f"theta3: {np.rad2deg(joint_angles[2])}")
-    print(f"theta4: {np.rad2deg(joint_angles[3])}")
-    print(f"theta5: {np.rad2deg(joint_angles[4])}")
-    print(f"theta6: {np.rad2deg(joint_angles[5])}")
 
     # IK -------------------------------------------------------------------------------------------
     eef_offset = (d6 + d7) * fk_htm[:3, 2]
@@ -203,7 +155,9 @@ def main() -> None:
     x = position[0]
     y = position[1]
     z = position[2]
-    print(f"position: {fk_htm[:3, 3]}")
+    print(f"position:\n{fk_htm[:3, 3]}")
+    print(f"orientation:\n{rotation}")
+    print(f"eef_offset: {eef_offset}")
 
     mult = 1.0
 
@@ -221,16 +175,16 @@ def main() -> None:
 
     # R03
     # [
-    #   [cos(theta1)*cos(theta2 + theta3), sin(theta1), sin(theta2 + theta3)*cos(theta1)],
-    #   [sin(theta1)*cos(theta2 + theta3), -cos(theta1), sin(theta1)*sin(theta2 + theta3)],
-    #   [sin(theta2 + theta3), 0.0, -cos(theta2 + theta3)]
+    #   [-s23*c1,  s1, c1*c23],
+    #   [-s1*s23, -c1, s1*c23],
+    #   [    c23, 0.0,    s23]
     # ]
 
-    # for a spherical wrist:
-    # R36 = [
-    #   [c4c5c6 - s4s6, -c4c5s6 - s4c6, c4s5]
-    #   [s4c5c6 + c4s6, -s4c5s6 + c4c6, s4s5]
-    #   [        -s5c6,           s5s6,   c5]
+    # orientation at base pose:
+    # R_b = [
+    #   [ 0.0, 0.0, 1.0],
+    #   [ 0.0, 1.0, 0.0],
+    #   [-1.0, 0.0, 0.0]
     # ]
 
     # theta4 = atan2(r13, r23)
@@ -245,21 +199,39 @@ def main() -> None:
     #   [r31, r32, r33]
     # ]
 
+    # for a spherical wrist (ZYZ):
+    # R36 = [
+    #   [c4c5c6 - s4s6, -c4c5s6 - s4c6, c4s5]
+    #   [s4c5c6 + c4s6, -s4c5s6 + c4c6, s4s5]
+    #   [        -s5c6,           s5s6,   c5]
+    # ]
+    # R03
+    # [
+    #   [-s23*c1,  s1, c1*c23],
+    #   [-s1*s23, -c1, s1*c23],
+    #   [    c23, 0.0,    s23]
+    # ]
+    # R03^T @ R = [
+    #   [-r11*s23*c1 - r21*s1*s23 + r31*c23, -r12*s23*c1 - r22*s1*s23 + r32*c23, -r13*s23*c1 - r23*s1*s23 + r33*c23],
+    #   [                   r11*s1 - r21*c1,                    r12*s1 - r22*c1,                    r13*s1 - r23*c1],
+    #   [ r11*c1*c23 + r21*s1*c23 + r31*s23,  r12*c1*c23 + r22*s1*c23 + r32*s23,  r13*c1*c23 + r23*s1*c23 + r33*s23]
+    # ]
+
     mult = 1.0
     r13 = (
-        rotation[0, 2] * (np.cos(theta1) * np.cos(theta2 + theta3))
+        -rotation[0, 2] * np.sin(theta2 + theta3) * np.cos(theta1)
+        - rotation[1, 2] * np.sin(theta1) * np.sin(theta2 + theta3)
+        + rotation[2, 2] * np.cos(theta2 + theta3)
+    )
+    r23 = rotation[0, 2] * np.sin(theta1) - rotation[1, 2] * np.cos(theta1)
+    theta4 = np.atan2(r13, r23)
+
+    r33 = (
+        rotation[0, 2] * (np.cos(theta2 + theta3) * np.cos(theta1))
         + rotation[1, 2] * (np.sin(theta1) * np.cos(theta2 + theta3))
         + rotation[2, 2] * (np.sin(theta2 + theta3))
     )
-    r23 = rotation[0, 2] * np.sin(theta1) - rotation[1, 2] * np.cos(theta1)
-    theta4 = np.deg2rad(90.0) - np.atan2(r13, r23)
-
-    r33 = (
-        rotation[0, 2] * (np.sin(theta2 + theta3) * np.cos(theta1))
-        + rotation[1, 2] * (np.sin(theta1) * np.sin(theta2 + theta3))
-        - rotation[2, 2] * (np.cos(theta2 + theta3))
-    )
-    theta5 = -np.atan2(r33, mult * np.sqrt(1.0 - r33**2))
+    theta5 = np.atan2(r33, mult * np.sqrt(1.0 - r33**2))
 
     r31 = (
         rotation[0, 0] * (np.cos(theta1) * np.cos(theta2 + theta3))
@@ -271,7 +243,7 @@ def main() -> None:
         + rotation[1, 1] * (np.sin(theta1) * np.cos(theta2 + theta3))
         + rotation[2, 1] * (np.sin(theta2 + theta3))
     )
-    theta6 = np.deg2rad(90.0) - np.atan2(-r31, r32)
+    theta6 = np.atan2(-r31, r32)
 
     print(f"theta1: {np.rad2deg(theta1)}")
     print(f"theta2: {np.rad2deg(theta2)}")
@@ -282,7 +254,10 @@ def main() -> None:
 
     new_joint_angles = [theta1, theta2, theta3, theta4, theta5, theta6]
     new_fk_htm = forward_kinematics(dh_chain, new_joint_angles)
-    print(f"position: {new_fk_htm[:3, 3]}")
+    new_position = new_fk_htm[:3, 3]
+    new_rotation = new_fk_htm[:3, :3]
+    print(f"position:\n{new_position}")
+    print(f"orientation:\n{new_rotation}")
 
 
 if __name__ == "__main__":

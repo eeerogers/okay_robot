@@ -131,12 +131,12 @@ def main() -> None:
     # theta5 = np.deg2rad(90.0)
     # theta6 = np.deg2rad(180.0)
 
-    theta1 = np.deg2rad(0.0)
+    theta1 = np.deg2rad(65.0)
     theta2 = np.deg2rad(0.0)
-    theta3 = np.deg2rad(0.0)
-    theta4 = np.deg2rad(0.0)
-    theta5 = np.deg2rad(10.0)
-    theta6 = np.deg2rad(0.0)
+    theta3 = np.deg2rad(25.0)
+    theta4 = np.deg2rad(10.0)
+    theta5 = np.deg2rad(15.0)
+    theta6 = np.deg2rad(10.0)
     print(f"theta1: {np.rad2deg(theta1)}")
     print(f"theta2: {np.rad2deg(theta2)}")
     print(f"theta3: {np.rad2deg(theta3)}")
@@ -224,14 +224,14 @@ def main() -> None:
         + rotation[2, 2] * np.cos(theta2 + theta3)
     )
     r23 = rotation[0, 2] * np.sin(theta1) - rotation[1, 2] * np.cos(theta1)
-    theta4 = np.atan2(r13, r23)
+    theta4 = np.atan2(r23, r13)
 
     r33 = (
         rotation[0, 2] * (np.cos(theta2 + theta3) * np.cos(theta1))
         + rotation[1, 2] * (np.sin(theta1) * np.cos(theta2 + theta3))
         + rotation[2, 2] * (np.sin(theta2 + theta3))
     )
-    theta5 = np.atan2(r33, mult * np.sqrt(1.0 - r33**2))
+    theta5 = np.atan2(mult * np.sqrt(1.0 - r33**2), r33)
 
     r31 = (
         rotation[0, 0] * (np.cos(theta1) * np.cos(theta2 + theta3))
@@ -243,7 +243,7 @@ def main() -> None:
         + rotation[1, 1] * (np.sin(theta1) * np.cos(theta2 + theta3))
         + rotation[2, 1] * (np.sin(theta2 + theta3))
     )
-    theta6 = np.atan2(-r31, r32)
+    theta6 = np.atan2(r32, -r31)
 
     print(f"theta1: {np.rad2deg(theta1)}")
     print(f"theta2: {np.rad2deg(theta2)}")

@@ -78,7 +78,7 @@ def sp_fk_rotation(dh_chain: list[DH], starting_index: int = 1) -> sp.Matrix:
 
 
 def main() -> None:
-    d0 = 0.041
+    d0 = 0.039
     dh0 = DH(0.0, d0, 0.0, 0.0)
 
     a1 = 0.040
@@ -131,12 +131,12 @@ def main() -> None:
     # theta5 = np.deg2rad(90.0)
     # theta6 = np.deg2rad(180.0)
 
-    theta1 = np.deg2rad(65.0)
+    theta1 = np.deg2rad(0.0)
     theta2 = np.deg2rad(0.0)
-    theta3 = np.deg2rad(25.0)
-    theta4 = np.deg2rad(10.0)
-    theta5 = np.deg2rad(15.0)
-    theta6 = np.deg2rad(10.0)
+    theta3 = np.deg2rad(0.0)
+    theta4 = np.deg2rad(0.0)
+    theta5 = np.deg2rad(0.0)
+    theta6 = np.deg2rad(0.0)
     print(f"theta1: {np.rad2deg(theta1)}")
     print(f"theta2: {np.rad2deg(theta2)}")
     print(f"theta3: {np.rad2deg(theta3)}")

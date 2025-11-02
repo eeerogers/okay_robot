@@ -1,5 +1,6 @@
 #pragma once
 
+#include "geometry_msgs/msg/twist.hpp"
 #include "okay_robot_common/okay_robot_state.hpp"
 #include "okay_robot_control/control/controller.hpp"
 #include "okay_robot_control/kinematics.hpp"
@@ -16,6 +17,7 @@ private:
     // callbacks
     void timer_callback_();
     void okay_robot_goal_subscriber_callback_(const okay_robot_msgs::msg::OkayRobotGoal msg);
+    void twist_subscriber_callback_(const geometry_msgs::msg::Twist msg);
     void servo_bus_observation_subscriber_callback_(
         const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg);
 
@@ -32,6 +34,7 @@ private:
         servo_bus_command_publisher_;
     rclcpp::Subscription<okay_robot_msgs::msg::OkayRobotGoal>::SharedPtr
         okay_robot_goal_subscriber_;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_subscriber_;
     rclcpp::Subscription<okay_robot_msgs::msg::ServoBusObservation>::SharedPtr
         servo_bus_observation_subscriber_;
 };

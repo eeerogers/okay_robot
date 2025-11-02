@@ -10,8 +10,7 @@ class Kinematics {
 public:
     Kinematics();
 
-    // TODO: implement vvv
-    // OkayRobot::Pose get_inverse(const OkayRobot::Transform& eef_transform);
+    OkayRobot::Pose get_inverse(const OkayRobot::Transform& eef_transform);
     OkayRobot::Transform get_forward(const OkayRobot::Pose& robot_pose);
 
 private:

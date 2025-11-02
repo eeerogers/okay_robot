@@ -4,7 +4,9 @@
 #include <memory>
 #include <string>
 
+#include "geometry_msgs/msg/twist.hpp"
 #include "okay_robot_common/print_data.hpp"
+#include "okay_robot_common/transform.hpp"
 #include "okay_robot_control/control/direct_controller.hpp"
 #include "okay_robot_control/robot_control_node.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
@@ -33,6 +35,9 @@ RobotControlNode::RobotControlNode()
     this->okay_robot_goal_subscriber_
         = this->create_subscription<okay_robot_msgs::msg::OkayRobotGoal>("okay_robot_goal", 10,
             std::bind(&RobotControlNode::okay_robot_goal_subscriber_callback_, this, _1));
+    this->twist_subscriber_
+        = this->create_subscription<geometry_msgs::msg::Twist>("okay_robot_goal_twist", 10,
+            std::bind(&RobotControlNode::twist_subscriber_callback_, this, _1));
     this->servo_bus_observation_subscriber_
         = this->create_subscription<okay_robot_msgs::msg::ServoBusObservation>(
             "servo_bus_observation", 10,
@@ -78,6 +83,21 @@ void RobotControlNode::okay_robot_goal_subscriber_callback_(
     // catch robot command
     OkayRobot::Pose new_goal(msg.joint_positions);
     this->controller_->set_goal_state(new_goal);
+}
+
+void RobotControlNode::twist_subscriber_callback_(const geometry_msgs::msg::Twist msg)
+{
+    // convert to transform
+    Eigen::Vector3f position(msg.linear.x, msg.linear.y, msg.linear.z);
+    Eigen::Matrix3f rotation
+        = OkayRobot::euler_to_rotation(msg.angular.x, msg.angular.y, msg.angular.z);
+    OkayRobot::Transform twist_tf(position, rotation);
+
+    // calc inverse kinematics
+    OkayRobot::Pose robot_pose(this->kinematics_->get_inverse(twist_tf));
+
+    // send joint positions to robot
+    this->controller_->set_goal_state(robot_pose);
 }
 
 void RobotControlNode::servo_bus_observation_subscriber_callback_(

@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+find_package(geometry_msgs REQUIRED)
 find_package(okay_robot_msgs REQUIRED)
 find_package(okay_robot_common REQUIRED)
 
@@ -29,7 +30,7 @@ target_include_directories(
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-ament_target_dependencies(robot_control_node okay_robot_msgs okay_robot_common rclcpp)
+ament_target_dependencies(robot_control_node okay_robot_msgs okay_robot_common geometry_msgs rclcpp)
 target_link_libraries(robot_control_node Eigen3::Eigen)
 
 install(TARGETS robot_control_node DESTINATION lib/${PROJECT_NAME})

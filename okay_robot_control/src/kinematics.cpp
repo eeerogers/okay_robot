@@ -80,7 +80,7 @@ OkayRobot::Pose Kinematics::get_inverse(const OkayRobot::Transform& eef_transfor
     // j3
     float d_theta3 = (a2 * a2 + (a3 * a3 + d4 * d4) - (s * s + r * r))
         / (2.0 * a2 * std::sqrt(a3 * a3 + d4 * d4));
-    float theta3 = -(M_PI / 2) - phi2 + std::atan2(std::sqrt(1.0 - d_theta3), d_theta3);
+    float theta3 = -(M_PI / 2) - phi2 + std::atan2(std::sqrt(1.0 - d_theta3 * d_theta3), d_theta3);
 
     // j4
     float r13 = -rotation(0, 2) * std::sin(theta2 + theta3) * std::cos(theta1)

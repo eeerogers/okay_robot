@@ -42,6 +42,9 @@ RobotControlNode::RobotControlNode()
         = this->create_subscription<okay_robot_msgs::msg::ServoBusObservation>(
             "servo_bus_observation", 10,
             std::bind(&RobotControlNode::servo_bus_observation_subscriber_callback_, this, _1));
+    this->gamepad_command_subscriber_
+        = this->create_subscription<okay_robot_msgs::msg::GamepadCommand>("gamepad", 10,
+            std::bind(&RobotControlNode::gamepad_command_subscriber_callback_, this, _1));
 
     // initialize current state
     auto current_time = std::chrono::steady_clock::now();
@@ -128,4 +131,94 @@ void RobotControlNode::servo_bus_observation_subscriber_callback_(
         joints_string.c_str(), new_transform.x, new_transform.y, new_transform.z);
 
     this->last_observation_ = std::make_unique<OkayRobot::Observation>(new_observation);
+}
+
+void RobotControlNode::gamepad_command_subscriber_callback_(
+    const okay_robot_msgs::msg::GamepadCommand::SharedPtr msg)
+{
+    float speed = 0.02;
+
+    Eigen::Vector3f xyz = Eigen::Vector3f::Zero();
+    Eigen::Vector3f rpy = Eigen::Vector3f::Zero();
+
+    // linear
+    // x: dpad up/down
+    // y: dpad left/right
+    // z: L2/R2
+
+    // gross if/elif/else to convert dpad to vector direction
+    if (msg->dpad_up) {
+        xyz(0) = 1.0;
+    } else if (msg->dpad_up_left) {
+        xyz(0) = 1.0;
+        xyz(1) = 1.0;
+    } else if (msg->dpad_left) {
+        xyz(1) = 1.0;
+    } else if (msg->dpad_down_left) {
+        xyz(0) = -1.0;
+        xyz(1) = 1.0;
+    } else if (msg->dpad_down) {
+        xyz(0) = -1.0;
+    } else if (msg->dpad_down_right) {
+        xyz(0) = -1.0;
+        xyz(1) = -1.0;
+    } else if (msg->dpad_right) {
+        xyz(1) = -1.0;
+    } else if (msg->dpad_up_right) {
+        xyz(0) = 1.0;
+        xyz(1) = -1.0;
+    }
+
+    if (msg->r2_button) {
+        xyz(2) = 1.0;
+    } else if (msg->l2_button) {
+        xyz(2) = -1.0;
+    }
+
+    // angular
+    // roll: L1/R1
+    // pitch: y/a button
+    // yaw: x/b button
+
+    if (msg->l1_button) {
+        rpy(0) = -1.0;
+    } else if (msg->r1_button) {
+        rpy(0) = 1.0;
+    }
+
+    if (msg->y_button) {
+        rpy(1) = 1.0;
+    } else if (msg->a_button) {
+        rpy(1) = -1.0;
+    }
+
+    if (msg->x_button) {
+        rpy(2) = 1.0;
+    } else if (msg->b_button) {
+        rpy(2) = -1.0;
+    }
+
+    xyz.normalize();
+
+    if (xyz.norm() == 0.0) {
+        return;
+    }
+
+    // increment current observation
+    OkayRobot::Pose last_pose(this->last_observation_->joint_positions);
+    OkayRobot::Transform last_tf(this->kinematics_->get_forward(last_pose));
+
+    Eigen::Vector3f position;
+    position = last_tf.position();
+    position += xyz * speed;
+
+    // static for now
+    Eigen::Matrix3f rotation;
+    rotation = OkayRobot::euler_to_rotation(M_PI / 2.0, M_PI / 2.0, M_PI / 2.0);
+
+    OkayRobot::Transform new_tf(position, rotation);
+
+    // set goal state
+    OkayRobot::Pose goal_pose(this->kinematics_->get_inverse(new_tf));
+    this->controller_->set_goal_state(goal_pose);
 }

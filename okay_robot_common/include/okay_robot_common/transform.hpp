@@ -27,7 +27,7 @@ public:
     const float z;
 
     Eigen::Vector3f position() const;
-    Eigen::Matrix3f orientation() const;
+    Eigen::Matrix3f rotation() const;
 
     Transform forward(const Transform& other) const;
     Transform inverse() const;

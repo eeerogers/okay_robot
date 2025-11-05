@@ -2,6 +2,13 @@
 #include <Eigen/Dense>
 
 namespace OkayRobot {
+float DHChain::a(const int& index) const { return this->dh_chain_[index].a; }
+float DHChain::d(const int& index) const { return this->dh_chain_[index].d; }
+float DHChain::alpha(const int& index) const { return this->dh_chain_[index].alpha; }
+float DHChain::theta(const int& index) const { return this->dh_chain_[index].theta; }
+const DH DHChain::dh(const int& index) const { return this->dh_chain_[index]; };
+int DHChain::length() const { return this->dh_chain_.size(); }
+
 Transform dh_to_transform(const DH& dh, const float& theta)
 {
     const float new_theta = dh.theta + theta;

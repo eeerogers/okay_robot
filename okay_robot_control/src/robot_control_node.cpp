@@ -136,7 +136,8 @@ void RobotControlNode::servo_bus_observation_subscriber_callback_(
 void RobotControlNode::gamepad_command_subscriber_callback_(
     const okay_robot_msgs::msg::GamepadCommand::SharedPtr msg)
 {
-    float speed = 0.02;
+    float speed_linear = 0.02;
+    float speed_angular = 0.08;
 
     Eigen::Vector3f xyz = Eigen::Vector3f::Zero();
     Eigen::Vector3f rpy = Eigen::Vector3f::Zero();
@@ -180,10 +181,16 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
     // pitch: y/a button
     // yaw: x/b button
 
-    if (msg->l1_button) {
-        rpy(0) = -1.0;
-    } else if (msg->r1_button) {
+    if (msg->x_button) {
         rpy(0) = 1.0;
+    } else if (msg->b_button) {
+        rpy(0) = -1.0;
+    }
+
+    if (msg->l1_button) {
+        rpy(2) = -1.0;
+    } else if (msg->r1_button) {
+        rpy(2) = 1.0;
     }
 
     if (msg->y_button) {
@@ -192,15 +199,10 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
         rpy(1) = -1.0;
     }
 
-    if (msg->x_button) {
-        rpy(2) = 1.0;
-    } else if (msg->b_button) {
-        rpy(2) = -1.0;
-    }
-
     xyz.normalize();
+    rpy.normalize();
 
-    if (xyz.norm() == 0.0) {
+    if (xyz.norm() == 0.0 && rpy.norm() == 0.0) {
         return;
     }
 
@@ -210,11 +212,13 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
 
     Eigen::Vector3f position;
     position = last_tf.position();
-    position += xyz * speed;
+    position += xyz * speed_linear;
 
     // static for now
     Eigen::Matrix3f rotation;
-    rotation = OkayRobot::euler_to_rotation(M_PI / 2.0, M_PI / 2.0, M_PI / 2.0);
+    rotation = last_tf.rotation();
+    rotation *= OkayRobot::euler_to_rotation(
+        rpy[0] * speed_angular, rpy[1] * speed_angular, rpy[2] * speed_angular);
 
     OkayRobot::Transform new_tf(position, rotation);
 

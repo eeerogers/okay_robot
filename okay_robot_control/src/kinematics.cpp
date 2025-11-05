@@ -3,69 +3,23 @@
 
 #include "okay_robot_control/kinematics.hpp"
 
-// TODO: un-hardcode this
-Kinematics::Kinematics()
-{
-    float d0 = 0.039;
-
-    float d1 = 0.042;
-    float a1 = 0.040;
-    float alpha1 = M_PI / 2.0;
-    float offset1 = M_PI / 2.0;
-
-    float a2_a = 0.150;
-    float a2_b = 0.028;
-    float phi2 = std::tan(a2_b / a2_a);
-    float a2 = std::sqrt(a2_a * a2_a + a2_b * a2_b);
-    float theta2 = (M_PI / 2.0) + phi2;
-    float offset2 = M_PI / 2.0;
-
-    float a3 = 0.060;
-    float alpha3 = M_PI / 2.0;
-    float theta3 = -phi2;
-    float offset3 = 3.0 * M_PI / 2.0;
-
-    float d4 = 0.155;
-    float alpha4 = -M_PI / 2.0;
-    float offset4 = M_PI;
-
-    float alpha5 = M_PI / 2.0;
-    float offset5 = M_PI / 2.0;
-
-    float d6 = 0.065;
-    float offset6 = M_PI;
-
-    float d7 = 0.079;
-
-    //                      a,  d,  alpha,  theta
-    auto j0 = OkayRobot::DH(0.0, d0, 0.0, 0.0);
-    auto j1 = OkayRobot::DH(a1, d1, alpha1, -offset1);
-    auto j2 = OkayRobot::DH(a2, 0.0, 0.0, theta2 - offset2);
-    auto j3 = OkayRobot::DH(a3, 0.0, alpha3, theta3 - offset3);
-    auto j4 = OkayRobot::DH(0.0, d4, alpha4, -offset4);
-    auto j5 = OkayRobot::DH(0.0, 0.0, alpha5, -offset5);
-    auto j6 = OkayRobot::DH(0.0, d6, 0.0, -offset6);
-    auto j7 = OkayRobot::DH(0.0, d7, 0.0, 0.0);
-
-    this->dh_chain_ = std::vector<OkayRobot::DH>({ j0, j1, j2, j3, j4, j5, j6, j7 });
-}
-
 OkayRobot::Pose Kinematics::get_inverse(const OkayRobot::Transform& eef_transform)
 {
-    Eigen::Vector3f z_dir = eef_transform.orientation().block<3, 1>(0, 2);
-    Eigen::Vector3f eef_offset = (this->dh_chain_[6].d + this->dh_chain_[7].d) * z_dir;
+    Eigen::Vector3f z_dir = eef_transform.rotation().block<3, 1>(0, 2);
+    Eigen::Vector3f eef_offset = (this->dh_chain_.d(6) + this->dh_chain_.d(7)) * z_dir;
     Eigen::Vector3f offset_position = eef_transform.position() - eef_offset;
-    Eigen::Matrix3f rotation = eef_transform.orientation();
+    Eigen::Matrix3f rotation = eef_transform.rotation();
+
     float x = offset_position[0];
     float y = offset_position[1];
     float z = offset_position[2];
 
-    float s = z - (this->dh_chain_[0].d + this->dh_chain_[1].d);
-    float r = std::sqrt(x * x + y * y) - this->dh_chain_[1].a;
+    float s = z - (this->dh_chain_.d(0) + this->dh_chain_.d(1));
+    float r = std::sqrt(x * x + y * y) - this->dh_chain_.a(1);
     float phi2 = std::atan(0.028 / 0.150);
-    float a2 = this->dh_chain_[2].a;
-    float a3 = this->dh_chain_[3].a;
-    float d4 = this->dh_chain_[4].d;
+    float a2 = this->dh_chain_.a(2);
+    float a3 = this->dh_chain_.a(3);
+    float d4 = this->dh_chain_.d(4);
 
     // j1
     float theta1 = std::atan2(y, x);
@@ -122,16 +76,62 @@ OkayRobot::Transform Kinematics::get_forward(const OkayRobot::Pose& robot_pose)
 {
     // start with the transform from world to joint1
     auto running_tf
-        = std::make_unique<OkayRobot::Transform>(dh_to_transform(this->dh_chain_[0], 0.0));
+        = std::make_unique<OkayRobot::Transform>(dh_to_transform(this->dh_chain_.dh(0), 0.0));
 
     // iterate through each joint in the chain (6)
     // TODO: don't hardcode the number of joints?
     for (int i = 0; i < 6; i++) {
-        auto dh_tf = dh_to_transform(this->dh_chain_[i + 1], robot_pose.joint_positions[i]);
+        auto dh_tf = dh_to_transform(this->dh_chain_.dh(i + 1), robot_pose.joint_positions[i]);
         running_tf = std::make_unique<OkayRobot::Transform>(running_tf->forward(dh_tf));
     }
 
     // the transforms after kinematic chain just gets added to the end
-    OkayRobot::Transform eef_dh_tf = dh_to_transform(this->dh_chain_.back(), 0.0);
+    OkayRobot::Transform eef_dh_tf = dh_to_transform(this->dh_chain_.dh(7), 0.0);
     return running_tf->forward(eef_dh_tf);
+}
+
+const OkayRobot::DHChain Kinematics::setup_dh_chain_()
+{
+    // d0 = 0.039;
+    auto j0 = OkayRobot::DH(0.0, 0.039, 0.0, 0.0);
+
+    // a1 = 0.040;
+    // d1 = 0.042;
+    // alpha1 = 90deg;
+    // offset1 = 90deg;
+    auto j1 = OkayRobot::DH(0.040, 0.042, M_PI / 2.0, -M_PI / 2.0);
+
+    // a2_a = 0.150;
+    // a2_b = 0.028;
+    // a2 = std::sqrt(a2_a * a2_a + a2_b * a2_b);
+    // phi2 = std::tan(a2_b / a2_a);
+    // theta2 = 90deg + phi2;
+    // offset2 = 90deg;
+    auto j2
+        = OkayRobot::DH(std::sqrt(0.15 * 0.15 + 0.028 * 0.028), 0.0, 0.0, std::tan(0.028 / 0.15));
+
+    // a3 = 0.060;
+    // alpha3 = 90deg;
+    // theta3 = -phi2;
+    // offset3 = 270deg;
+    auto j3 = OkayRobot::DH(0.06, 0.0, M_PI / 2.0, -std::tan(0.028 / 0.15) - (3.0 * M_PI / 2.0));
+
+    // d4 = 0.155;
+    // alpha4 = -90deg;
+    // offset4 = 90deg;
+    auto j4 = OkayRobot::DH(0.0, 0.155, -M_PI / 2.0, -M_PI);
+
+    // alpha5 = 90deg;
+    // offset5 = 90deg;
+    auto j5 = OkayRobot::DH(0.0, 0.0, M_PI / 2.0, -M_PI / 2.0);
+
+    // d6 = 0.065;
+    // offset6 = 90deg;
+    auto j6 = OkayRobot::DH(0.0, 0.065, 0.0, -M_PI);
+
+    // d7 = 0.079;
+    auto j7 = OkayRobot::DH(0.0, 0.079, 0.0, 0.0);
+
+    auto dh_chain = std::vector<OkayRobot::DH>({ j0, j1, j2, j3, j4, j5, j6, j7 });
+    return OkayRobot::DHChain(dh_chain);
 }

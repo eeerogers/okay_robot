@@ -8,12 +8,14 @@
 
 class Kinematics {
 public:
-    Kinematics();
+    Kinematics()
+        : dh_chain_(this->setup_dh_chain_()) { };
 
     OkayRobot::Pose get_inverse(const OkayRobot::Transform& eef_transform);
     OkayRobot::Transform get_forward(const OkayRobot::Pose& robot_pose);
 
 private:
-    // TODO: make const vvv
-    std::vector<OkayRobot::DH> dh_chain_;
+    const OkayRobot::DHChain dh_chain_;
+
+    const OkayRobot::DHChain setup_dh_chain_();
 };

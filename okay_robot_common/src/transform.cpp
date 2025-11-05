@@ -3,7 +3,7 @@
 namespace OkayRobot {
 Eigen::Vector3f Transform::position() const { return this->matrix.block<3, 1>(0, 3); }
 
-Eigen::Matrix3f Transform::orientation() const { return this->matrix.block<3, 3>(0, 0); }
+Eigen::Matrix3f Transform::rotation() const { return this->matrix.block<3, 3>(0, 0); }
 
 Transform Transform::forward(const Transform& other) const
 {

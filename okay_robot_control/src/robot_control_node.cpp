@@ -85,7 +85,7 @@ void RobotControlNode::okay_robot_goal_subscriber_callback_(
 {
     // catch robot command
     OkayRobot::Pose new_goal(msg.joint_positions);
-    this->controller_->set_goal_state(new_goal);
+    this->set_goal_pose_(new_goal);
 }
 
 void RobotControlNode::twist_subscriber_callback_(const geometry_msgs::msg::Twist msg)
@@ -96,11 +96,11 @@ void RobotControlNode::twist_subscriber_callback_(const geometry_msgs::msg::Twis
         = OkayRobot::euler_to_rotation(msg.angular.x, msg.angular.y, msg.angular.z);
     OkayRobot::Transform twist_tf(position, rotation);
 
-    // calc inverse kinematics
+    // calculate inverse kinematics
     OkayRobot::Pose robot_pose(this->kinematics_->get_inverse(twist_tf));
 
     // send joint positions to robot
-    this->controller_->set_goal_state(robot_pose);
+    this->set_goal_pose_(robot_pose);
 }
 
 void RobotControlNode::servo_bus_observation_subscriber_callback_(
@@ -121,15 +121,6 @@ void RobotControlNode::servo_bus_observation_subscriber_callback_(
 
     OkayRobot::Observation new_observation(
         current_time, joint_positions, std::vector<float>(7, 0.0));
-
-    OkayRobot::Transform new_transform
-        = this->kinematics_->get_forward(OkayRobot::Pose(new_observation.joint_positions));
-    std::string joints_string = vec_to_string(new_observation.joint_positions);
-
-    RCLCPP_INFO(this->get_logger(),
-        "current position:\npose: [%s]\n\tx: %f\n\ty: %f\n\tz: %f\n----------",
-        joints_string.c_str(), new_transform.x, new_transform.y, new_transform.z);
-
     this->last_observation_ = std::make_unique<OkayRobot::Observation>(new_observation);
 }
 
@@ -224,5 +215,18 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
 
     // set goal state
     OkayRobot::Pose goal_pose(this->kinematics_->get_inverse(new_tf));
-    this->controller_->set_goal_state(goal_pose);
+    this->set_goal_pose_(goal_pose);
+}
+
+void RobotControlNode::set_goal_pose_(const OkayRobot::Pose& pose)
+{
+    bool is_valid = OkayRobot::pose_is_valid(pose);
+    std::string joints_string = vec_to_string(pose.joint_positions);
+    RCLCPP_INFO(this->get_logger(), "current pose is %s:\n[%s]", is_valid ? "valid" : "invalid",
+        joints_string.c_str());
+
+    if (!is_valid)
+        return;
+
+    this->controller_->set_goal_state(pose);
 }

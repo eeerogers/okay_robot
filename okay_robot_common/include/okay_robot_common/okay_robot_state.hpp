@@ -33,4 +33,6 @@ public:
 
     const std::vector<float> joint_positions;
 };
+
+bool pose_is_valid(const Pose pose);
 }

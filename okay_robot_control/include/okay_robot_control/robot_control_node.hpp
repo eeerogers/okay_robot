@@ -26,6 +26,7 @@ private:
 
     okay_robot_msgs::msg::ServoBusCommand okay_robot_to_servo_bus_command_(
         OkayRobot::Command& command);
+    void set_goal_pose_(const OkayRobot::Pose& pose);
 
     double control_freq_;
     std::unique_ptr<Controller> controller_;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "geometry_msgs/msg/twist.hpp"
-#include "okay_robot_common/okay_robot_state.hpp"
+#include "okay_robot_common/robot_state.hpp"
 #include "okay_robot_control/control/controller.hpp"
 #include "okay_robot_control/kinematics.hpp"
 #include "okay_robot_msgs/msg/gamepad_command.hpp"

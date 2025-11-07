@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "okay_robot_common/okay_robot_state.hpp"
+#include "okay_robot_common/robot_state.hpp"
 #include "okay_robot_control/control/controller.hpp"
 
 class DirectController : public Controller {

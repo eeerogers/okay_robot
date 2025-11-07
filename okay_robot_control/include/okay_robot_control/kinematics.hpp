@@ -2,20 +2,20 @@
 
 #include <vector>
 
-#include "okay_robot_common/denavit_hartenberg.hpp"
-#include "okay_robot_common/okay_robot_state.hpp"
+#include "okay_robot_common/description.hpp"
+#include "okay_robot_common/robot_state.hpp"
 #include "okay_robot_common/transform.hpp"
 
 class Kinematics {
 public:
     Kinematics()
-        : dh_chain_(this->setup_dh_chain_()) { };
+        : description_(this->setup_robot_description_()) { };
 
     OkayRobot::Pose get_inverse(const OkayRobot::Transform& eef_transform);
     OkayRobot::Transform get_forward(const OkayRobot::Pose& robot_pose);
 
 private:
-    const OkayRobot::DHChain dh_chain_;
+    const OkayRobot::Description description_;
 
-    const OkayRobot::DHChain setup_dh_chain_();
+    const OkayRobot::Description setup_robot_description_();
 };

@@ -37,5 +37,21 @@ private:
         const Eigen::Vector3f& position, const Eigen::Matrix3f& rotation);
 };
 
+class DenavitHartenberg {
+public:
+    DenavitHartenberg(const float& a, const float& d, const float& alpha, const float& theta)
+        : a(a)
+        , d(d)
+        , alpha(alpha)
+        , theta(theta) { };
+
+    const float a;
+    const float d;
+    const float alpha;
+    const float theta;
+};
+
+Transform dh_to_transform(const DenavitHartenberg& dh, const float& theta);
+
 Eigen::Matrix3f euler_to_rotation(const float& x, const float& y, const float& z);
 }

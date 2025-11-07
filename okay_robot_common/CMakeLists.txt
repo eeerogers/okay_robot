@@ -13,9 +13,10 @@ find_package(Eigen3 REQUIRED)
 add_library(
   ${PROJECT_NAME}
   src/transform.cpp
-  src/denavit_hartenberg.cpp
   src/print_data.cpp
-  src/okay_robot_state.cpp
+  src/robot_state.cpp
+  src/description.cpp
+  src/print_data.cpp
 )
 
 target_include_directories(

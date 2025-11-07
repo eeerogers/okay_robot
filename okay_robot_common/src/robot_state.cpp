@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "okay_robot_common/okay_robot_state.hpp"
+#include "okay_robot_common/robot_state.hpp"
 
 namespace OkayRobot {
 bool pose_is_valid(const Pose pose)

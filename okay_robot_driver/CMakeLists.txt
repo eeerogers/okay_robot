@@ -8,6 +8,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(okay_robot_msgs REQUIRED)
+find_package(okay_robot_common REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(SDL2 REQUIRED)
 
@@ -37,7 +38,7 @@ add_executable(
   src/servo_bus/servo_bus_node.cpp
   src/servo_bus/servo_bus.cpp
 )
-ament_target_dependencies(servo_bus_node okay_robot_msgs rclcpp)
+ament_target_dependencies(servo_bus_node okay_robot_msgs okay_robot_common rclcpp)
 target_link_libraries(servo_bus_node ${LibSerial_LIBRARIES})
 target_include_directories(
   servo_bus_node PUBLIC

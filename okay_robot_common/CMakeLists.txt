@@ -16,7 +16,6 @@ add_library(
   src/print_data.cpp
   src/robot_state.cpp
   src/description.cpp
-  src/print_data.cpp
 )
 
 target_include_directories(
@@ -26,9 +25,9 @@ target_include_directories(
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-ament_target_dependencies(${PROJECT_NAME} rclcpp)
+ament_target_dependencies(${PROJECT_NAME} rclcpp Eigen3)
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-ament_export_dependencies(rclcpp)
+ament_export_dependencies(rclcpp Eigen3)
 
 target_link_libraries(${PROJECT_NAME} Eigen3::Eigen)
 

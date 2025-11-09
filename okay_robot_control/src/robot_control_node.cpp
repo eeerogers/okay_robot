@@ -48,8 +48,9 @@ RobotControlNode::RobotControlNode()
 
     // initialize current state
     auto current_time = std::chrono::steady_clock::now();
-    this->last_observation_ = std::make_unique<OkayRobot::Observation>(
-        current_time, std::vector<float>(7, 0.0), std::vector<float>(7, 0.0));
+    this->last_observation_ = std::make_unique<OkayRobot::Observation>(current_time,
+        std::vector<float>({ 1.57, 1.57, 4.71, 3.14, 1.57, 3.14, 0.15 }),
+        std::vector<float>(7, 0.0));
 }
 
 void RobotControlNode::timer_callback_()

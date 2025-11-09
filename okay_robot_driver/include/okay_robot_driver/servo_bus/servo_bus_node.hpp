@@ -1,5 +1,7 @@
 #pragma once
 
+#include <queue>
+
 #include "okay_robot_driver/servo_bus/servo_bus.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
 #include "okay_robot_msgs/msg/servo_bus_observation.hpp"
@@ -13,11 +15,16 @@ private:
     void timer_callback_();
     void command_callback_(const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg);
 
-    double poll_freq_ = 100.0;
-    std::string port_ = "/dev/ttyACM0";
-    LibSerial::BaudRate baud_ = LibSerial::BaudRate::BAUD_1000000;
+    void publish_observation();
+    void execute_next_command_();
 
-    float rad_to_range_ = 4095.0 / (2.0 * M_PI);
+    std::queue<okay_robot_msgs::msg::ServoBusCommand> command_queue_;
+
+    const double poll_freq_ = 100.0;
+    const std::string port_ = "/dev/ttyACM0";
+    const LibSerial::BaudRate baud_ = LibSerial::BaudRate::BAUD_1000000;
+
+    const float rad_to_range_ = 4095.0 / (2.0 * M_PI);
 
     ServoBus servo_bus_;
     rclcpp::TimerBase::SharedPtr timer_;

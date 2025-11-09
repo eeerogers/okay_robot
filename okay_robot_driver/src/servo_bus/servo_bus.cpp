@@ -189,6 +189,10 @@ void ServoBus::execute_reg_write()
  */
 std::vector<uint8_t> ServoBus::read_data(uint8_t id, std::vector<uint8_t> data)
 {
+    // start by flushing the input buffer
+    this->serial_.FlushInputBuffer();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
     std::vector<uint8_t> message = build_packet(id, ServoInstruction::READ_DATA, data);
     this->serial_.Write(message);
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -209,7 +213,7 @@ std::vector<uint8_t> ServoBus::read_buffer()
             this->serial_.ReadByte(read_byte, 10);
         } catch (LibSerial::ReadTimeout&) {
             printf("timed out reading byte\n");
-            return this->message_parser_.get_message();
+            return std::vector<uint8_t>();
         }
 
         this->message_parser_.step(read_byte);

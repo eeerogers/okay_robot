@@ -1,9 +1,11 @@
-#include "okay_robot_driver/servo_bus/servo_bus_node.hpp"
+#include <cmath>
+
+#include "okay_robot_common/print_data.hpp"
 #include "okay_robot_driver/servo_bus/servo_bus.hpp"
+#include "okay_robot_driver/servo_bus/servo_bus_node.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
 #include "okay_robot_msgs/msg/servo_bus_observation.hpp"
 #include "okay_robot_msgs/msg/servo_observation.hpp"
-#include <cmath>
 
 using std::placeholders::_1;
 
@@ -25,6 +27,12 @@ ServoBusNode::ServoBusNode()
 
 void ServoBusNode::timer_callback_()
 {
+    this->publish_observation();
+    this->execute_next_command_();
+}
+
+void ServoBusNode::publish_observation()
+{
     /** TODO: make this better */
 
     std::vector<uint8_t> data_buffer;
@@ -37,17 +45,28 @@ void ServoBusNode::timer_callback_()
     for (uint8_t i = 1; i <= 7; i++) {
         data_buffer = this->servo_bus_.read_data(i, data);
 
+        // TODO: handle this more gracefully?
+        // return without publishing if anything read is bad
+        if (data_buffer.empty() || (uint8_t)data_buffer[2] != i)
+            return;
+
         // need to flip the position because the servo outputs reversed direction
         servo_position = 4095 - ((data_buffer[6] << 8) + data_buffer[5]);
         angle_position = servo_position * (1.0 / this->rad_to_range_);
 
         auto new_observation = okay_robot_msgs::msg::ServoObservation();
-        new_observation.id = i;
+        new_observation.id = data_buffer[2];
         new_observation.position = angle_position;
         new_observation.status = data_buffer[4];
 
+        printf("i: %i, id: %i\n", i, new_observation.id);
+        if (i != new_observation.id) {
+            print_message(data_buffer);
+        }
+
         observations.push_back(new_observation);
     }
+    printf("------------------------------\n");
 
     auto servo_bus_observation = okay_robot_msgs::msg::ServoBusObservation();
     servo_bus_observation.observations = observations;
@@ -55,17 +74,23 @@ void ServoBusNode::timer_callback_()
     this->publisher_->publish(servo_bus_observation);
 }
 
-void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg)
+void ServoBusNode::execute_next_command_()
 {
     /** TODO: make this better */
+
+    if (this->command_queue_.empty())
+        return;
+
+    auto next_command = this->command_queue_.front();
+    this->command_queue_.pop();
 
     int full_position;
     uint8_t position_lo;
     uint8_t position_hi;
 
     // turn commands into packets and send to servo bus
-    for (auto command : msg->commands) {
-        full_position = command.position * this->rad_to_range_;
+    for (auto command : next_command.commands) {
+        full_position = 4095 - (command.position * this->rad_to_range_);
         position_lo = full_position & 0xFF;
         position_hi = (full_position >> 8) & 0xFF;
 
@@ -74,4 +99,9 @@ void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand
     }
 
     this->servo_bus_.execute_reg_write();
+}
+
+void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg)
+{
+    this->command_queue_.push(*msg.get());
 }

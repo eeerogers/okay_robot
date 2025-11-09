@@ -138,6 +138,7 @@ class ServoBus:
             id, Instruction.WRITE_DATA, [Register.LOCK_FLAG, 0x01 if enabled else 0x00]
         )
         self._serial_connection.write(instruction.raw)
+        time.sleep(0.001)
 
         return self._serial_connection.read(8)
 
@@ -171,6 +172,13 @@ class ServoBus:
         self._set_write_lock(id, enabled=False)
         self._serial_connection.write(instruction.raw)
         self._set_write_lock(id, enabled=True)
+        self._serial_connection.read_all()
+
+        read_bound = ServoInstruction.build_instruction(
+            id, Instruction.READ_DATA, [Register.MINIMUM_ANGLE, 0x02]
+        )
+        self._serial_connection.write(read_bound.raw)
+        time.sleep(0.001)
 
         return self._serial_connection.read_all()
 
@@ -184,6 +192,13 @@ class ServoBus:
         self._set_write_lock(id, enabled=False)
         self._serial_connection.write(instruction.raw)
         self._set_write_lock(id, enabled=True)
+        self._serial_connection.read_all()
+
+        read_bound = ServoInstruction.build_instruction(
+            id, Instruction.READ_DATA, [Register.MAXIMUM_ANGLE, 0x02]
+        )
+        self._serial_connection.write(read_bound.raw)
+        time.sleep(0.001)
 
         return self._serial_connection.read_all()
 
@@ -198,6 +213,12 @@ class ServoBus:
         self._serial_connection.write(instruction.raw)
 
         return self._serial_connection.read(6)
+
+    def reset_servo(self, id: int) -> bytes:
+        instruction = ServoInstruction.build_instruction(id, Instruction.RESET, [])
+        self._serial_connection.write(instruction.raw)
+
+        return self._serial_connection.read_all()
 
 
 if __name__ == "__main__":
@@ -242,10 +263,10 @@ if __name__ == "__main__":
 
     # 0-180deg
     # servo_id = 1
-    # servo_bus.set_min_angle(servo_id, 0)
-    # servo_bus.set_max_angle(servo_id, 2048)
+    # print(servo_bus.set_min_angle(servo_id, 2048))
+    # print(servo_bus.set_max_angle(servo_id, 4095))
 
-    # servo_id = 3
+    # servo_id = 1
     # max = 4095
     # min = 0
     # servo_bus.write_position(servo_id, min)

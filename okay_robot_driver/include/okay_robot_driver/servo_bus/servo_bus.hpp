@@ -86,7 +86,6 @@ enum MessageParseState {
     COMPLETE,
 };
 
-void print_message(std::vector<uint8_t> message);
 std::vector<uint8_t> build_packet(uint8_t id, uint8_t instruction, std::vector<uint8_t> data);
 
 class MessageParser {

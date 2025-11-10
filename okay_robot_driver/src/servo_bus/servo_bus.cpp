@@ -191,11 +191,9 @@ std::vector<uint8_t> ServoBus::read_data(uint8_t id, std::vector<uint8_t> data)
 {
     // start by flushing the input buffer
     this->serial_.FlushInputBuffer();
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     std::vector<uint8_t> message = build_packet(id, ServoInstruction::READ_DATA, data);
     this->serial_.Write(message);
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     return this->read_buffer();
 }

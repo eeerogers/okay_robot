@@ -1,0 +1,28 @@
+# !/usr/bin/env python3
+
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, RegisterEventHandler, Shutdown
+from launch.event_handlers import OnProcessExit
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+
+
+def generate_launch_description() -> LaunchDescription:
+    shutdown_on_exit = RegisterEventHandler(
+        OnProcessExit(on_exit=[Shutdown(reason="a node has exited, shutting down everything else")])
+    )
+
+    return LaunchDescription(
+        [
+            DeclareLaunchArgument("run_as_puppet", default_value="true"),
+            Node(
+                package="okay_robot_sim",
+                executable="mujoco_sim_node",
+                parameters=[{"run_as_puppet": LaunchConfiguration("run_as_puppet")}],
+            ),
+            Node(package="okay_robot_driver", executable="servo_bus_node"),
+            Node(package="okay_robot_driver", executable="gamepad_node"),
+            Node(package="okay_robot_control", executable="robot_control_node"),
+            shutdown_on_exit,
+        ]
+    )

@@ -51,6 +51,8 @@ RobotControlNode::RobotControlNode()
     this->last_observation_ = std::make_unique<OkayRobot::Observation>(current_time,
         std::vector<float>({ 1.57, 1.57, 4.71, 3.14, 1.57, 3.14, 0.15 }),
         std::vector<float>(7, 0.0));
+    this->last_step_ = std::make_unique<OkayRobot::Pose>(
+        std::vector<float>({ 1.57, 1.57, 4.71, 3.14, 1.57, 3.14, 0.15 }));
 }
 
 void RobotControlNode::timer_callback_()
@@ -63,6 +65,9 @@ void RobotControlNode::timer_callback_()
     okay_robot_msgs::msg::ServoBusCommand bus_command
         = this->okay_robot_to_servo_bus_command_(next_command);
     this->servo_bus_command_publisher_->publish(bus_command);
+
+    // update state variables
+    this->last_step_ = std::make_unique<OkayRobot::Pose>(next_command.joint_positions);
 }
 
 okay_robot_msgs::msg::ServoBusCommand RobotControlNode::okay_robot_to_servo_bus_command_(
@@ -128,9 +133,6 @@ void RobotControlNode::servo_bus_observation_subscriber_callback_(
 void RobotControlNode::gamepad_command_subscriber_callback_(
     const okay_robot_msgs::msg::GamepadCommand::SharedPtr msg)
 {
-    float speed_linear = 0.02;
-    float speed_angular = 0.08;
-
     Eigen::Vector3f xyz = Eigen::Vector3f::Zero();
     Eigen::Vector3f rpy = Eigen::Vector3f::Zero();
 
@@ -198,25 +200,19 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
         return;
     }
 
-    // increment current observation
-    OkayRobot::Pose last_pose(this->last_observation_->joint_positions);
-    OkayRobot::Transform last_tf(this->kinematics_->get_forward(last_pose));
+    auto last_step_tf = this->kinematics_->get_forward(*this->last_step_.get());
 
-    Eigen::Vector3f position;
-    position = last_tf.position();
-    position += xyz * speed_linear;
+    // increment step in gamepad direction
+    Eigen::Vector3f position = last_step_tf.position() + xyz * this->gamepad_speed_linear_;
+    Eigen::Matrix3f rotation = last_step_tf.rotation()
+        * OkayRobot::euler_to_rotation(rpy[0] * this->gamepad_speed_angular_,
+            rpy[1] * this->gamepad_speed_angular_, rpy[2] * this->gamepad_speed_angular_);
 
-    // static for now
-    Eigen::Matrix3f rotation;
-    rotation = last_tf.rotation();
-    rotation *= OkayRobot::euler_to_rotation(
-        rpy[0] * speed_angular, rpy[1] * speed_angular, rpy[2] * speed_angular);
+    auto next_step_tf = OkayRobot::Transform(position, rotation);
+    auto goal_pose = this->kinematics_->get_inverse(next_step_tf);
 
-    OkayRobot::Transform new_tf(position, rotation);
-
-    // set goal state
-    OkayRobot::Pose goal_pose(this->kinematics_->get_inverse(new_tf));
-    this->set_goal_pose_(goal_pose);
+    // update controller goal state
+    this->controller_->set_goal_state(goal_pose);
 }
 
 void RobotControlNode::set_goal_pose_(const OkayRobot::Pose& pose)

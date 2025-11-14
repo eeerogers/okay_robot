@@ -32,6 +32,10 @@ private:
     std::unique_ptr<Controller> controller_;
     std::unique_ptr<Kinematics> kinematics_;
     std::unique_ptr<OkayRobot::Observation> last_observation_;
+    std::unique_ptr<OkayRobot::Pose> last_step_;
+
+    const float gamepad_speed_linear_ = 0.005;
+    const float gamepad_speed_angular_ = 0.04;
 
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<okay_robot_msgs::msg::ServoBusCommand>::SharedPtr

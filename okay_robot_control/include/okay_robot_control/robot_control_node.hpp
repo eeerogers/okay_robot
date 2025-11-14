@@ -28,14 +28,15 @@ private:
         OkayRobot::Command& command);
     void set_goal_pose_(const OkayRobot::Pose& pose);
 
-    double control_freq_;
+    const double control_freq_ = 30.0;
     std::unique_ptr<Controller> controller_;
     std::unique_ptr<Kinematics> kinematics_;
     std::unique_ptr<OkayRobot::Observation> last_observation_;
-    std::unique_ptr<OkayRobot::Pose> last_step_;
+    std::unique_ptr<OkayRobot::Transform> last_step_;
+    std::unique_ptr<OkayRobot::Transform> next_step_;
 
-    const float gamepad_speed_linear_ = 0.005;
-    const float gamepad_speed_angular_ = 0.04;
+    const float gamepad_speed_linear_ = 0.05 / this->control_freq_;
+    const float gamepad_speed_angular_ = 0.2 / this->control_freq_;
 
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<okay_robot_msgs::msg::ServoBusCommand>::SharedPtr

@@ -97,8 +97,6 @@ const OkayRobot::Description Kinematics::setup_robot_description_()
     auto j0_bounds = OkayRobot::Bounds({ 0.0, 0.0 });
     auto joint0 = OkayRobot::JointDescription(j0_dh, j0_bounds);
 
-    // d0 = 0.039;
-
     // a1 = 0.040;
     // d1 = 0.042;
     // alpha1 = 90deg;

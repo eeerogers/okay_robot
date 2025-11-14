@@ -19,7 +19,6 @@ RobotControlNode::RobotControlNode()
     : Node("robot_control_node")
 {
     // TODO: move this out to a config
-    this->control_freq_ = 30.0;
     this->controller_ = std::make_unique<DirectController>();
     this->kinematics_ = std::make_unique<Kinematics>();
 
@@ -51,8 +50,11 @@ RobotControlNode::RobotControlNode()
     this->last_observation_ = std::make_unique<OkayRobot::Observation>(current_time,
         std::vector<float>({ 1.57, 1.57, 4.71, 3.14, 1.57, 3.14, 0.15 }),
         std::vector<float>(7, 0.0));
-    this->last_step_ = std::make_unique<OkayRobot::Pose>(
-        std::vector<float>({ 1.57, 1.57, 4.71, 3.14, 1.57, 3.14, 0.15 }));
+
+    OkayRobot::Transform step_tf
+        = this->kinematics_->get_forward(OkayRobot::Pose(this->last_observation_->joint_positions));
+    this->last_step_ = std::make_unique<OkayRobot::Transform>(step_tf);
+    this->next_step_ = std::make_unique<OkayRobot::Transform>(step_tf);
 }
 
 void RobotControlNode::timer_callback_()
@@ -67,7 +69,7 @@ void RobotControlNode::timer_callback_()
     this->servo_bus_command_publisher_->publish(bus_command);
 
     // update state variables
-    this->last_step_ = std::make_unique<OkayRobot::Pose>(next_command.joint_positions);
+    this->last_step_ = std::make_unique<OkayRobot::Transform>(*this->next_step_.get());
 }
 
 okay_robot_msgs::msg::ServoBusCommand RobotControlNode::okay_robot_to_servo_bus_command_(
@@ -199,17 +201,19 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
     if (xyz.norm() == 0.0 && rpy.norm() == 0.0) {
         return;
     }
-
-    auto last_step_tf = this->kinematics_->get_forward(*this->last_step_.get());
+    RCLCPP_INFO(this->get_logger(), "got here 1: %s", this->last_step_.get());
 
     // increment step in gamepad direction
-    Eigen::Vector3f position = last_step_tf.position() + xyz * this->gamepad_speed_linear_;
-    Eigen::Matrix3f rotation = last_step_tf.rotation()
+    Eigen::Vector3f position = this->last_step_->position() + xyz * this->gamepad_speed_linear_;
+    Eigen::Matrix3f rotation = this->last_step_->rotation()
         * OkayRobot::euler_to_rotation(rpy[0] * this->gamepad_speed_angular_,
             rpy[1] * this->gamepad_speed_angular_, rpy[2] * this->gamepad_speed_angular_);
 
-    auto next_step_tf = OkayRobot::Transform(position, rotation);
-    auto goal_pose = this->kinematics_->get_inverse(next_step_tf);
+    RCLCPP_INFO(this->get_logger(), "got here 2");
+
+    this->next_step_ = std::make_unique<OkayRobot::Transform>(position, rotation);
+    auto goal_pose = this->kinematics_->get_inverse(*this->next_step_.get());
+    RCLCPP_INFO(this->get_logger(), "got here 3");
 
     // update controller goal state
     this->controller_->set_goal_state(goal_pose);

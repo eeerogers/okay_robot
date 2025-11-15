@@ -140,82 +140,65 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
     Eigen::Vector3f xyz = Eigen::Vector3f::Zero();
     Eigen::Vector3f rpy = Eigen::Vector3f::Zero();
 
+    // (-32768, 32767)
+    int stick_deadzone(2000);
+    int trigger_deadzone(1000);
+
     // linear
-    // x: dpad up/down
-    // y: dpad left/right
+    // x: left stick y-axis
+    // y: left stick x-axis
     // z: L2/R2
 
-    // gross if/elif/else to convert dpad to vector direction
-    if (msg->dpad_up) {
-        xyz(0) = 1.0;
-    } else if (msg->dpad_up_left) {
-        xyz(0) = 1.0;
-        xyz(1) = 1.0;
-    } else if (msg->dpad_left) {
-        xyz(1) = 1.0;
-    } else if (msg->dpad_down_left) {
-        xyz(0) = -1.0;
-        xyz(1) = 1.0;
-    } else if (msg->dpad_down) {
-        xyz(0) = -1.0;
-    } else if (msg->dpad_down_right) {
-        xyz(0) = -1.0;
-        xyz(1) = -1.0;
-    } else if (msg->dpad_right) {
-        xyz(1) = -1.0;
-    } else if (msg->dpad_up_right) {
-        xyz(0) = 1.0;
-        xyz(1) = -1.0;
-    }
+    // shift left/right trigger range to positive
+    int left_trigger(msg->l_trigger + 32768);
+    int right_trigger(msg->r_trigger + 32768);
 
-    if (msg->r2_button) {
-        xyz(2) = 1.0;
-    } else if (msg->l2_button) {
-        xyz(2) = -1.0;
-    }
+    xyz(0) = -msg->left_stick_y_axis;
+    xyz(1) = -msg->left_stick_x_axis;
+    if (left_trigger >= right_trigger)
+        xyz(2) = -left_trigger / 2.0;
+    else
+        xyz(2) = right_trigger / 2.0;
+
+    if (std::abs(xyz(0)) <= stick_deadzone)
+        xyz(0) = 0.0;
+    if (std::abs(xyz(1)) <= stick_deadzone)
+        xyz(1) = 0.0;
+    if (std::abs(xyz(2)) <= trigger_deadzone)
+        xyz(2) = 0.0;
 
     // angular
-    // roll: L1/R1
-    // pitch: y/a button
-    // yaw: x/b button
+    // roll: x/b button
+    // pitch: right stick y-axis
+    // yaw: right stick x-axis
 
-    if (msg->x_button) {
-        rpy(0) = 1.0;
-    } else if (msg->b_button) {
-        rpy(0) = -1.0;
+    rpy(0) = -msg->right_stick_x_axis;
+    rpy(1) = msg->right_stick_y_axis;
+    if (msg->b_button) {
+        rpy(2) = 32767.0;
+    } else if (msg->x_button) {
+        rpy(2) = -32767.0;
     }
 
-    if (msg->l1_button) {
-        rpy(2) = -1.0;
-    } else if (msg->r1_button) {
-        rpy(2) = 1.0;
-    }
+    if (std::abs(rpy(0)) <= stick_deadzone)
+        rpy(0) = 0.0;
+    if (std::abs(rpy(1)) <= stick_deadzone)
+        rpy(1) = 0.0;
 
-    if (msg->y_button) {
-        rpy(1) = 1.0;
-    } else if (msg->a_button) {
-        rpy(1) = -1.0;
-    }
-
-    xyz.normalize();
-    rpy.normalize();
+    xyz *= (this->gamepad_speed_linear_ / 32767.0);
+    rpy *= (this->gamepad_speed_angular_ / 32767.0);
 
     if (xyz.norm() == 0.0 && rpy.norm() == 0.0) {
         return;
     }
-    RCLCPP_INFO(this->get_logger(), "got here 1: %s", this->last_step_.get());
 
     // increment step in gamepad direction
-    Eigen::Vector3f position = this->last_step_->position() + xyz * this->gamepad_speed_linear_;
-    Eigen::Matrix3f rotation = this->last_step_->rotation()
-        * OkayRobot::euler_to_rotation(rpy[0] * this->gamepad_speed_angular_,
-            rpy[1] * this->gamepad_speed_angular_, rpy[2] * this->gamepad_speed_angular_);
-
-    RCLCPP_INFO(this->get_logger(), "got here 2");
+    Eigen::Vector3f position = this->last_step_->position() + xyz;
+    Eigen::Matrix3f rotation
+        = this->last_step_->rotation() * OkayRobot::euler_to_rotation(rpy[0], rpy[1], rpy[2]);
 
     this->next_step_ = std::make_unique<OkayRobot::Transform>(position, rotation);
     auto goal_pose = this->kinematics_->get_inverse(*this->next_step_.get());
-    RCLCPP_INFO(this->get_logger(), "got here 3");
 
     // update controller goal state
     this->controller_->set_goal_state(goal_pose);

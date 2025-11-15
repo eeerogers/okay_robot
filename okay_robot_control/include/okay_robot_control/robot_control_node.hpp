@@ -35,8 +35,8 @@ private:
     std::unique_ptr<OkayRobot::Transform> last_step_;
     std::unique_ptr<OkayRobot::Transform> next_step_;
 
-    const float gamepad_speed_linear_ = 0.05 / this->control_freq_;
-    const float gamepad_speed_angular_ = 0.2 / this->control_freq_;
+    const float gamepad_speed_linear_ = 0.08 / this->control_freq_;
+    const float gamepad_speed_angular_ = 0.79 / this->control_freq_;
 
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<okay_robot_msgs::msg::ServoBusCommand>::SharedPtr

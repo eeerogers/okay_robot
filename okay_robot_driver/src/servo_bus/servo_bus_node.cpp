@@ -1,6 +1,7 @@
 #include <cmath>
 
 #include "okay_robot_common/print_data.hpp"
+#include "okay_robot_common/topic.hpp"
 #include "okay_robot_driver/servo_bus/servo_bus.hpp"
 #include "okay_robot_driver/servo_bus/servo_bus_node.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
@@ -20,9 +21,9 @@ ServoBusNode::ServoBusNode()
         = this->create_wall_timer(duration, std::bind(&ServoBusNode::timer_callback_, this));
 
     this->publisher_ = this->create_publisher<okay_robot_msgs::msg::ServoBusObservation>(
-        "servo_bus_observation", 10);
+        TOPIC_SERVO_BUS_OBSERVATION, 10);
     this->subscriber_ = this->create_subscription<okay_robot_msgs::msg::ServoBusCommand>(
-        "servo_bus_command", 10, std::bind(&ServoBusNode::command_callback_, this, _1));
+        TOPIC_SERVO_BUS_COMMAND, 10, std::bind(&ServoBusNode::command_callback_, this, _1));
 }
 
 void ServoBusNode::timer_callback_()

@@ -1,4 +1,5 @@
 #include "okay_robot_driver/gamepad/gamepad_node.hpp"
+#include "okay_robot_common/topic.hpp"
 #include "okay_robot_driver/gamepad/gamepad.hpp"
 #include "okay_robot_msgs/msg/gamepad_command.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -29,7 +30,8 @@ GamepadNode::GamepadNode()
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::duration<double>(1.0 / this->poll_freq_));
     this->timer_ = this->create_wall_timer(duration, std::bind(&GamepadNode::timer_callback, this));
-    this->publisher_ = this->create_publisher<okay_robot_msgs::msg::GamepadCommand>("gamepad", 10);
+    this->publisher_
+        = this->create_publisher<okay_robot_msgs::msg::GamepadCommand>(TOPIC_GAMEPAD, 10);
 
     RCLCPP_INFO(this->get_logger(), "Initialized timer");
 }

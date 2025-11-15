@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "okay_robot_common/topic.hpp"
 #include "okay_robot_description/descriptions.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
 #include "okay_robot_msgs/msg/servo_bus_observation.hpp"
@@ -55,7 +56,7 @@ MujocoSimNode::MujocoSimNode()
 
         this->servo_bus_observation_subscriber_
             = this->create_subscription<okay_robot_msgs::msg::ServoBusObservation>(
-                "servo_bus_observation", 10,
+                TOPIC_SERVO_BUS_OBSERVATION, 10,
                 std::bind(&MujocoSimNode::servo_bus_observation_subscriber_callback_, this, _1));
     } else {
         RCLCPP_INFO(this->get_logger(),
@@ -63,10 +64,11 @@ MujocoSimNode::MujocoSimNode()
 
         this->servo_bus_observation_publisher_
             = this->create_publisher<okay_robot_msgs::msg::ServoBusObservation>(
-                "servo_bus_observation", 10);
+                TOPIC_SERVO_BUS_OBSERVATION, 10);
         this->servo_bus_command_subscriber_
-            = this->create_subscription<okay_robot_msgs::msg::ServoBusCommand>("servo_bus_command",
-                10, std::bind(&MujocoSimNode::servo_bus_command_subscriber_callback_, this, _1));
+            = this->create_subscription<okay_robot_msgs::msg::ServoBusCommand>(
+                TOPIC_SERVO_BUS_COMMAND, 10,
+                std::bind(&MujocoSimNode::servo_bus_command_subscriber_callback_, this, _1));
     }
 }
 

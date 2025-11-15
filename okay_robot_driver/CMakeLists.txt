@@ -24,7 +24,7 @@ add_executable(
   src/gamepad/gamepad_node.cpp
   src/gamepad/gamepad.cpp
 )
-ament_target_dependencies(gamepad_node okay_robot_msgs rclcpp)
+ament_target_dependencies(gamepad_node okay_robot_msgs okay_robot_common rclcpp)
 target_link_libraries(gamepad_node SDL2)
 target_include_directories(
   gamepad_node PUBLIC

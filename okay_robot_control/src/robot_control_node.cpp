@@ -6,6 +6,7 @@
 
 #include "geometry_msgs/msg/twist.hpp"
 #include "okay_robot_common/print_data.hpp"
+#include "okay_robot_common/topic.hpp"
 #include "okay_robot_common/transform.hpp"
 #include "okay_robot_control/control/direct_controller.hpp"
 #include "okay_robot_control/robot_control_node.hpp"
@@ -30,19 +31,20 @@ RobotControlNode::RobotControlNode()
 
     // set up pubs/subs
     this->servo_bus_command_publisher_
-        = this->create_publisher<okay_robot_msgs::msg::ServoBusCommand>("servo_bus_command", 10);
+        = this->create_publisher<okay_robot_msgs::msg::ServoBusCommand>(
+            TOPIC_SERVO_BUS_COMMAND, 10);
     this->okay_robot_goal_subscriber_
-        = this->create_subscription<okay_robot_msgs::msg::OkayRobotGoal>("okay_robot_goal", 10,
+        = this->create_subscription<okay_robot_msgs::msg::OkayRobotGoal>(TOPIC_OKAY_ROBOT_GOAL, 10,
             std::bind(&RobotControlNode::okay_robot_goal_subscriber_callback_, this, _1));
     this->twist_subscriber_
-        = this->create_subscription<geometry_msgs::msg::Twist>("okay_robot_goal_twist", 10,
+        = this->create_subscription<geometry_msgs::msg::Twist>(TOPIC_OKAY_ROBOT_GOAL_TWIST, 10,
             std::bind(&RobotControlNode::twist_subscriber_callback_, this, _1));
     this->servo_bus_observation_subscriber_
         = this->create_subscription<okay_robot_msgs::msg::ServoBusObservation>(
-            "servo_bus_observation", 10,
+            TOPIC_SERVO_BUS_OBSERVATION, 10,
             std::bind(&RobotControlNode::servo_bus_observation_subscriber_callback_, this, _1));
     this->gamepad_command_subscriber_
-        = this->create_subscription<okay_robot_msgs::msg::GamepadCommand>("gamepad", 10,
+        = this->create_subscription<okay_robot_msgs::msg::GamepadCommand>(TOPIC_GAMEPAD, 10,
             std::bind(&RobotControlNode::gamepad_command_subscriber_callback_, this, _1));
 
     // initialize current state

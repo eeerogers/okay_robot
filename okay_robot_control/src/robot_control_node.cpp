@@ -107,7 +107,8 @@ void RobotControlNode::twist_subscriber_callback_(const geometry_msgs::msg::Twis
     OkayRobot::Transform twist_tf(position, rotation);
 
     // calculate inverse kinematics
-    OkayRobot::Pose robot_pose(this->kinematics_->get_inverse(twist_tf));
+    OkayRobot::Pose robot_pose(this->kinematics_->get_inverse(
+        twist_tf, OkayRobot::Pose(this->last_observation_->joint_positions)));
 
     // send joint positions to robot
     this->set_goal_pose_(robot_pose);
@@ -196,7 +197,8 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
         = this->last_step_->rotation() * OkayRobot::euler_to_rotation(rpy[0], rpy[1], rpy[2]);
 
     this->next_step_ = std::make_unique<OkayRobot::Transform>(position, rotation);
-    auto goal_pose = this->kinematics_->get_inverse(*this->next_step_.get());
+    auto goal_pose = this->kinematics_->get_inverse(
+        *this->next_step_.get(), OkayRobot::Pose(this->last_observation_->joint_positions));
 
     // update controller goal state
     this->controller_->set_goal_state(goal_pose);

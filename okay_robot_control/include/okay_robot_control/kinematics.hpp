@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Eigen/Dense>
 #include <vector>
 
 #include "okay_robot_common/description.hpp"
@@ -9,13 +10,17 @@
 class Kinematics {
 public:
     Kinematics()
-        : description_(this->setup_robot_description_()) { };
+        : description_(this->setup_robot_description_())
+        , joint_offsets_(this->setup_joint_offsets_()) { };
 
-    OkayRobot::Pose get_inverse(const OkayRobot::Transform& eef_transform);
+    OkayRobot::Pose get_inverse(
+        const OkayRobot::Transform& eef_transform, const OkayRobot::Pose& last_pose);
     OkayRobot::Transform get_forward(const OkayRobot::Pose& robot_pose);
 
 private:
     const OkayRobot::Description description_;
+    const Eigen::Vector<float, 6> joint_offsets_;
 
     const OkayRobot::Description setup_robot_description_();
+    const Eigen::Vector<float, 6> setup_joint_offsets_();
 };

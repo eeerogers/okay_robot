@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Eigen/Dense>
 #include <chrono>
 #include <vector>
 
@@ -30,9 +31,12 @@ class Pose {
 public:
     Pose(const std::vector<float> pos)
         : joint_positions(pos) { };
+    Pose(const Eigen::Vector<float, 6> pos)
+        : joint_positions(std::vector<float>(pos.data(), pos.data() + pos.size())) { };
 
     const std::vector<float> joint_positions;
 };
 
+Eigen::Vector<float, 6> pose_to_eigen_vector(const Pose pose);
 bool pose_is_valid(const Pose pose);
 }

@@ -140,9 +140,7 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
     Eigen::Vector3f xyz = Eigen::Vector3f::Zero();
     Eigen::Vector3f rpy = Eigen::Vector3f::Zero();
 
-    // (-32768, 32767)
-    int stick_deadzone(2000);
-    int trigger_deadzone(1000);
+    // stick range: (-32768, 32767)
 
     // linear
     // x: left stick y-axis
@@ -160,11 +158,11 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
     else
         xyz(2) = right_trigger / 2.0;
 
-    if (std::abs(xyz(0)) <= stick_deadzone)
+    if (std::abs(xyz(0)) <= this->gamepad_stick_deadzone_)
         xyz(0) = 0.0;
-    if (std::abs(xyz(1)) <= stick_deadzone)
+    if (std::abs(xyz(1)) <= this->gamepad_stick_deadzone_)
         xyz(1) = 0.0;
-    if (std::abs(xyz(2)) <= trigger_deadzone)
+    if (std::abs(xyz(2)) <= this->gamepad_trigger_deadzone_)
         xyz(2) = 0.0;
 
     // angular
@@ -177,16 +175,16 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
     if (msg->b_button) {
         rpy(2) = 32767.0;
     } else if (msg->x_button) {
-        rpy(2) = -32767.0;
+        rpy(2) = -32768.0;
     }
 
-    if (std::abs(rpy(0)) <= stick_deadzone)
+    if (std::abs(rpy(0)) <= this->gamepad_stick_deadzone_)
         rpy(0) = 0.0;
-    if (std::abs(rpy(1)) <= stick_deadzone)
+    if (std::abs(rpy(1)) <= this->gamepad_stick_deadzone_)
         rpy(1) = 0.0;
 
-    xyz *= (this->gamepad_speed_linear_ / 32767.0);
-    rpy *= (this->gamepad_speed_angular_ / 32767.0);
+    xyz *= (this->gamepad_speed_linear_ / 32768.0);
+    rpy *= (this->gamepad_speed_angular_ / 32768.0);
 
     if (xyz.norm() == 0.0 && rpy.norm() == 0.0) {
         return;

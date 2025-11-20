@@ -108,9 +108,11 @@ public:
     void init(std::string port, LibSerial::BaudRate baud);
 
     void write_data(uint8_t id, std::vector<uint8_t> data);
+    void sync_write_data(std::vector<uint8_t> data);
     void reg_write_data(uint8_t id, std::vector<uint8_t> data);
     void execute_reg_write();
     std::vector<uint8_t> read_data(uint8_t id, std::vector<uint8_t> data);
+    void sync_read_data(std::vector<uint8_t> data);
     std::vector<uint8_t> read_buffer();
     void ping(uint8_t id);
 

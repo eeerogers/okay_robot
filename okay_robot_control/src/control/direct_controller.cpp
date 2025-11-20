@@ -3,7 +3,7 @@
 DirectController::DirectController()
 {
     this->current_goal_ = std::make_unique<OkayRobot::Pose>(
-        std::vector<float>({ 1.57, 1.57, 4.71, 3.14, 1.57, 3.14, 0.15 }));
+        std::vector<float>({ M_PI_2, M_PI_2, 3.0 * M_PI_2, M_PI, M_PI_2, M_PI }));
 }
 
 void DirectController::set_goal_state(const OkayRobot::Pose& goal_state)

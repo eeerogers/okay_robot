@@ -28,8 +28,8 @@ ServoBusNode::ServoBusNode()
 
 void ServoBusNode::timer_callback_()
 {
-    this->publish_observation();
     this->execute_next_command_();
+    this->publish_observation();
 }
 
 void ServoBusNode::publish_observation()
@@ -61,9 +61,12 @@ void ServoBusNode::publish_observation()
     // current: 2 bytes
     std::vector<okay_robot_msgs::msg::ServoObservation> observations;
     std::vector<uint8_t> data({ ServoRegister::CURRENT_POSITION, 0x0F });
+    for (uint8_t i = 1; i <= 7; i++)
+        data.push_back(i);
+    this->servo_bus_.sync_read_data(data);
 
     for (uint8_t i = 1; i <= 7; i++) {
-        data_buffer = this->servo_bus_.read_data(i, data);
+        data_buffer = this->servo_bus_.read_buffer();
 
         // TODO: handle this more gracefully?
         // return without publishing if anything read is bad
@@ -82,7 +85,7 @@ void ServoBusNode::publish_observation()
             = servo_position & (1 << 15) ? -(servo_position & ~(1 << 15)) : servo_position;
         servo_speed = servo_speed & (1 << 15) ? -(servo_speed & ~(1 << 15)) : servo_speed;
         servo_load = servo_load & (1 << 10) ? -(servo_load & ~(1 << 10)) : servo_load;
-        servo_current = servo_current & (1 << 15) ? -(servo_current & (1 << 15)) : servo_current;
+        servo_current = servo_current & (1 << 15) ? -(servo_current & ~(1 << 15)) : servo_current;
 
         // map to units
         servo_position_rad = servo_position * (1.0 / this->rad_to_range_);
@@ -92,7 +95,7 @@ void ServoBusNode::publish_observation()
         servo_current_a = servo_current * 0.0065;
 
         // build ros message
-        auto new_observation = okay_robot_msgs::msg::ServoObservation();
+        okay_robot_msgs::msg::ServoObservation new_observation;
         new_observation.id = data_buffer[2];
         new_observation.position = servo_position_rad;
         new_observation.speed = servo_speed_rad_s;
@@ -114,7 +117,7 @@ void ServoBusNode::publish_observation()
 
 void ServoBusNode::execute_next_command_()
 {
-    /** TODO: make this better */
+    // TODO: make this better
 
     if (this->command_queue_.empty())
         return;
@@ -127,16 +130,18 @@ void ServoBusNode::execute_next_command_()
     uint8_t position_hi;
 
     // turn commands into packets and send to servo bus
+    std::vector<uint8_t> data({ ServoRegister::TARGET_POSITION, 0x02 });
     for (auto command : next_command.commands) {
         full_position = 4095 - (command.position * this->rad_to_range_);
         position_lo = full_position & 0xFF;
         position_hi = (full_position >> 8) & 0xFF;
 
-        this->servo_bus_.reg_write_data(
-            command.id, { ServoRegister::TARGET_POSITION, position_lo, position_hi });
+        data.push_back((uint8_t)command.id);
+        data.push_back(position_lo);
+        data.push_back(position_hi);
     }
 
-    this->servo_bus_.execute_reg_write();
+    this->servo_bus_.sync_write_data(data);
 }
 
 void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg)

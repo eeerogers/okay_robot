@@ -32,8 +32,8 @@ private:
     std::unique_ptr<Controller> controller_;
     std::unique_ptr<Kinematics> kinematics_;
     std::unique_ptr<OkayRobot::Observation> last_observation_;
-    std::unique_ptr<OkayRobot::Transform> last_step_;
-    std::unique_ptr<OkayRobot::Transform> next_step_;
+    std::unique_ptr<OkayRobot::GamepadState> last_step_;
+    std::unique_ptr<OkayRobot::GamepadState> next_step_;
 
     const int gamepad_stick_deadzone_ = 2000;
     const int gamepad_trigger_deadzone_ = 1000;

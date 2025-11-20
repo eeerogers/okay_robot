@@ -156,6 +156,15 @@ void ServoBus::write_data(uint8_t id, std::vector<uint8_t> data)
 }
 
 /**
+ *
+ */
+void ServoBus::sync_write_data(std::vector<uint8_t> data)
+{
+    std::vector<uint8_t> message = build_packet(0xFE, ServoInstruction::SYNCWRITE_DATA, data);
+    this->serial_.Write(message);
+}
+
+/**
  * Writes data to a buffer on the serial port to be executed by an Action command at a later time
  *
  * @param id [uint_t] the id of the servo to receive the message
@@ -199,7 +208,18 @@ std::vector<uint8_t> ServoBus::read_data(uint8_t id, std::vector<uint8_t> data)
 }
 
 /**
- * Reads the last message from the serial port
+ *
+ */
+void ServoBus::sync_read_data(std::vector<uint8_t> data)
+{
+    this->serial_.FlushInputBuffer();
+
+    std::vector<uint8_t> message = build_packet(0xFE, ServoInstruction::SYNCREAD_DATA, data);
+    this->serial_.Write(message);
+}
+
+/**
+ * Reads the next message from the serial port
  *
  * @return An array of bytes [std::vector<uint8_t>] containing the raw message data
  */

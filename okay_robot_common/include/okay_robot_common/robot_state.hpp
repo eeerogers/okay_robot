@@ -4,6 +4,8 @@
 #include <chrono>
 #include <vector>
 
+#include "okay_robot_common/transform.hpp"
+
 namespace OkayRobot {
 class Observation {
 public:
@@ -35,6 +37,19 @@ public:
         : joint_positions(std::vector<float>(pos.data(), pos.data() + pos.size())) { };
 
     const std::vector<float> joint_positions;
+};
+
+class GamepadState {
+public:
+    GamepadState(const Transform& transform, const float& eef_position)
+        : transform(transform)
+        , eef_position(eef_position) { };
+
+    Eigen::Vector3f position() { return this->transform.position(); };
+    Eigen::Matrix3f rotation() { return this->transform.rotation(); };
+
+    const Transform transform;
+    const float eef_position;
 };
 
 Eigen::Vector<float, 6> pose_to_eigen_vector(const Pose pose);

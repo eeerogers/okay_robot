@@ -1,9 +1,9 @@
-float32 right_stick_x_axis
-float32 right_stick_y_axis
-float32 left_stick_x_axis
-float32 left_stick_y_axis
-float32 l_trigger
-float32 r_trigger
+int16 right_stick_x_axis
+int16 right_stick_y_axis
+int16 left_stick_x_axis
+int16 left_stick_y_axis
+int16 l_trigger
+int16 r_trigger
 
 bool dpad_up
 bool dpad_up_left

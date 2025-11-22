@@ -43,6 +43,6 @@ enum gamepad_dpad {
     DPAD_UL = 9,
 };
 
-void set_button(okay_robot_msgs::msg::GamepadCommand* msg, int val, bool state);
-void set_axis(okay_robot_msgs::msg::GamepadCommand* msg, int val, float state);
-void set_dpad(okay_robot_msgs::msg::GamepadCommand* msg, int val, bool state);
+void set_button(okay_robot_msgs::msg::GamepadCommand* msg, const int& val, const bool& state);
+void set_axis(okay_robot_msgs::msg::GamepadCommand* msg, const int& val, const int& state);
+void set_dpad(okay_robot_msgs::msg::GamepadCommand* msg, const int& val, const bool& state);

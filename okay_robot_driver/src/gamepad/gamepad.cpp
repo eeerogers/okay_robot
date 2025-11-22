@@ -1,7 +1,7 @@
 #include "okay_robot_driver/gamepad/gamepad.hpp"
 #include "okay_robot_msgs/msg/gamepad_command.hpp"
 
-void set_button(okay_robot_msgs::msg::GamepadCommand* msg, int val, bool state)
+void set_button(okay_robot_msgs::msg::GamepadCommand* msg, const int& val, const bool& state)
 {
     switch (val) {
     case static_cast<int>(gamepad_button::BUTTON_D):
@@ -46,7 +46,7 @@ void set_button(okay_robot_msgs::msg::GamepadCommand* msg, int val, bool state)
     }
 }
 
-void set_axis(okay_robot_msgs::msg::GamepadCommand* msg, int val, float state)
+void set_axis(okay_robot_msgs::msg::GamepadCommand* msg, const int& val, const int& state)
 {
     switch (val) {
     case static_cast<int>(gamepad_axis::AXIS_LSTICK_X):
@@ -70,7 +70,7 @@ void set_axis(okay_robot_msgs::msg::GamepadCommand* msg, int val, float state)
     }
 }
 
-void set_dpad(okay_robot_msgs::msg::GamepadCommand* msg, int val, bool state)
+void set_dpad(okay_robot_msgs::msg::GamepadCommand* msg, const int& val, const bool& state)
 {
     switch (val) {
     case static_cast<int>(gamepad_dpad::DPAD_NONE):

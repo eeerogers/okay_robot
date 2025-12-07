@@ -6,10 +6,10 @@
 OkayRobot::Pose Kinematics::get_inverse(
     const OkayRobot::Transform& eef_transform, const OkayRobot::Pose& last_pose)
 {
-    Eigen::Vector3f z_dir = eef_transform.rotation().block<3, 1>(0, 2);
-    Eigen::Vector3f eef_offset = (this->description_.dh_d(6) + this->description_.dh_d(7)) * z_dir;
-    Eigen::Vector3f offset_position = eef_transform.position() - eef_offset;
-    Eigen::Matrix3f rotation = eef_transform.rotation();
+    Eigen::Vector3f eef_offset
+        = (this->description_.dh_d(6) + this->description_.dh_d(7)) * eef_transform.rotation.z();
+    const Eigen::Vector3f offset_position = eef_transform.position.vector - eef_offset;
+    const Eigen::Matrix3f rotation = eef_transform.rotation.matrix;
 
     float x = offset_position[0];
     float y = offset_position[1];
@@ -82,18 +82,18 @@ OkayRobot::Pose Kinematics::get_inverse(
 OkayRobot::Transform Kinematics::get_forward(const OkayRobot::Pose& robot_pose)
 {
     // start with the transform from world to joint1
-    auto running_tf
-        = std::make_unique<OkayRobot::Transform>(dh_to_transform(this->description_.dh(0), 0.0));
+    auto running_tf = std::make_unique<OkayRobot::Transform>(this->description_.dh(0), 0.0);
 
     // iterate through each joint in the chain (6)
     // TODO: don't hardcode the number of joints?
     for (int i = 0; i < 6; i++) {
-        auto dh_tf = dh_to_transform(this->description_.dh(i + 1), robot_pose.joint_positions[i]);
+        auto dh_tf
+            = OkayRobot::Transform(this->description_.dh(i + 1), robot_pose.joint_positions[i]);
         running_tf = std::make_unique<OkayRobot::Transform>(running_tf->forward(dh_tf));
     }
 
     // the transforms after kinematic chain just gets added to the end
-    OkayRobot::Transform eef_dh_tf = dh_to_transform(this->description_.dh(7), 0.0);
+    auto eef_dh_tf = OkayRobot::Transform(this->description_.dh(7), 0.0);
     return running_tf->forward(eef_dh_tf);
 }
 

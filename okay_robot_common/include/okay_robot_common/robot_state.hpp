@@ -4,7 +4,7 @@
 #include <chrono>
 #include <vector>
 
-#include "okay_robot_common/transform.hpp"
+#include "okay_robot_common/transform/transform.hpp"
 
 namespace OkayRobot {
 class Observation {
@@ -45,8 +45,8 @@ public:
         : transform(transform)
         , eef_position(eef_position) { };
 
-    Eigen::Vector3f position() { return this->transform.position(); };
-    Eigen::Matrix3f rotation() { return this->transform.rotation(); };
+    Position position() { return this->transform.position; };
+    Rotation rotation() { return this->transform.rotation; };
 
     const Transform transform;
     const float eef_position;

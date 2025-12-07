@@ -10,12 +10,10 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 add_library(
   ${PROJECT_NAME}
-  src/transform.cpp
-  src/print_data.cpp
-  src/robot_state.cpp
-  src/description.cpp
+  ${SOURCES}
 )
 
 target_include_directories(

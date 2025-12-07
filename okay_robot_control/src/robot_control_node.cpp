@@ -7,7 +7,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "okay_robot_common/print_data.hpp"
 #include "okay_robot_common/topic.hpp"
-#include "okay_robot_common/transform.hpp"
+#include "okay_robot_common/transform/transform.hpp"
 #include "okay_robot_control/control/direct_controller.hpp"
 #include "okay_robot_control/robot_control_node.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
@@ -109,9 +109,8 @@ void RobotControlNode::okay_robot_goal_subscriber_callback_(
 void RobotControlNode::twist_subscriber_callback_(const geometry_msgs::msg::Twist msg)
 {
     // convert to transform
-    Eigen::Vector3f position(msg.linear.x, msg.linear.y, msg.linear.z);
-    Eigen::Matrix3f rotation
-        = OkayRobot::euler_to_rotation(msg.angular.x, msg.angular.y, msg.angular.z);
+    OkayRobot::Position position(msg.linear.x, msg.linear.y, msg.linear.z);
+    OkayRobot::Rotation rotation(msg.angular.x, msg.angular.y, msg.angular.z);
     OkayRobot::Transform twist_tf(position, rotation);
 
     // calculate inverse kinematics
@@ -210,9 +209,9 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
         return;
 
     // increment step in gamepad direction
-    Eigen::Vector3f position = this->last_step_->position() + xyz;
-    Eigen::Matrix3f rotation
-        = this->last_step_->rotation() * OkayRobot::euler_to_rotation(rpy[0], rpy[1], rpy[2]);
+    OkayRobot::Position position(this->last_step_->position().vector + xyz);
+    OkayRobot::Rotation rotation(
+        this->last_step_->rotation().matrix * OkayRobot::Rotation(rpy[0], rpy[1], rpy[2]).matrix);
     float eef_position = this->last_step_->eef_position + (eef_dir * this->gamepad_speed_angular_);
     eef_position = std::clamp(eef_position, (float)0.0, M_PI_2f);
 

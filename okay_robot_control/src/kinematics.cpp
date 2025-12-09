@@ -3,8 +3,8 @@
 
 #include "okay_robot_control/kinematics.hpp"
 
-OkayRobot::Pose Kinematics::get_inverse(
-    const OkayRobot::Transform& eef_transform, const OkayRobot::Pose& last_pose)
+OkayRobot::JointPose Kinematics::get_inverse(
+    const OkayRobot::Transform& eef_transform, const OkayRobot::JointPose& last_pose)
 {
     Eigen::Vector3f eef_offset
         = (this->description_.dh_d(6) + this->description_.dh_d(7)) * eef_transform.rotation.z();
@@ -63,8 +63,6 @@ OkayRobot::Pose Kinematics::get_inverse(
     float theta6_neg = std::atan2(-r32, r31);
 
     // determine which configuration to use
-    Eigen::Vector<float, 6> pose_last(OkayRobot::pose_to_eigen_vector(last_pose));
-
     Eigen::Vector<float, 6> pose_pos;
     pose_pos << theta1, theta2, theta3, theta4_pos, theta5_pos, theta6_pos;
     pose_pos += this->joint_offsets_;
@@ -73,13 +71,14 @@ OkayRobot::Pose Kinematics::get_inverse(
     pose_neg << theta1, theta2, theta3, theta4_neg, theta5_neg, theta6_neg;
     pose_neg += this->joint_offsets_;
 
-    if ((pose_last - pose_pos).lpNorm<1>() <= (pose_last - pose_neg).lpNorm<1>())
-        return OkayRobot::Pose(pose_pos);
+    if ((last_pose.joint_positions - pose_pos).lpNorm<1>()
+        <= (last_pose.joint_positions - pose_neg).lpNorm<1>())
+        return OkayRobot::JointPose(pose_pos);
     else
-        return OkayRobot::Pose(pose_neg);
+        return OkayRobot::JointPose(pose_neg);
 }
 
-OkayRobot::Transform Kinematics::get_forward(const OkayRobot::Pose& robot_pose)
+OkayRobot::Transform Kinematics::get_forward(const OkayRobot::JointPose& robot_pose)
 {
     // start with the transform from world to joint1
     auto running_tf = std::make_unique<OkayRobot::Transform>(this->description_.dh(0), 0.0);

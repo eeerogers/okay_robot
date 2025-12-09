@@ -53,8 +53,8 @@ RobotControlNode::RobotControlNode()
         std::vector<float>({ M_PI_2f, M_PI_2f, 3.0 * M_PI_2f, M_PIf, M_PI_2f, M_PIf, M_PI_4f }),
         std::vector<float>(7, 0.0));
 
-    OkayRobot::Transform step_tf
-        = this->kinematics_->get_forward(OkayRobot::Pose(this->last_observation_->joint_positions));
+    OkayRobot::Transform step_tf = this->kinematics_->get_forward(
+        OkayRobot::JointPose(this->last_observation_->joint_positions));
     auto new_state = OkayRobot::GamepadState(step_tf, M_PI_4f);
     this->last_step_ = std::make_unique<OkayRobot::GamepadState>(new_state);
     this->next_step_ = std::make_unique<OkayRobot::GamepadState>(new_state);
@@ -63,7 +63,7 @@ RobotControlNode::RobotControlNode()
 void RobotControlNode::timer_callback_()
 {
     // spin control loop
-    OkayRobot::JointPositionCommand next_command
+    OkayRobot::JointPose next_command
         = this->controller_->step_control_loop(*this->last_observation_.get());
 
     // send command to servo bus
@@ -76,7 +76,7 @@ void RobotControlNode::timer_callback_()
 }
 
 okay_robot_msgs::msg::ServoBusCommand RobotControlNode::okay_robot_to_servo_bus_command_(
-    OkayRobot::JointPositionCommand& command)
+    OkayRobot::JointPose& command)
 {
     auto bus_command = okay_robot_msgs::msg::ServoBusCommand();
     for (int i = 0; i < command.joint_positions.size(); i++) {
@@ -102,7 +102,7 @@ void RobotControlNode::okay_robot_goal_subscriber_callback_(
     const okay_robot_msgs::msg::OkayRobotGoal msg)
 {
     // catch robot command
-    OkayRobot::Pose new_goal(msg.joint_positions);
+    OkayRobot::JointPose new_goal(msg.joint_positions);
     this->set_goal_pose_(new_goal);
 }
 
@@ -114,8 +114,8 @@ void RobotControlNode::twist_subscriber_callback_(const geometry_msgs::msg::Twis
     OkayRobot::Transform twist_tf(position, rotation);
 
     // calculate inverse kinematics
-    OkayRobot::Pose robot_pose(this->kinematics_->get_inverse(
-        twist_tf, OkayRobot::Pose(this->last_observation_->joint_positions)));
+    OkayRobot::JointPose robot_pose(this->kinematics_->get_inverse(
+        twist_tf, OkayRobot::JointPose(this->last_observation_->joint_positions)));
 
     // send joint positions to robot
     this->set_goal_pose_(robot_pose);
@@ -216,8 +216,8 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
     eef_position = std::clamp(eef_position, (float)0.0, M_PI_2f);
 
     auto next_step_tf = OkayRobot::Transform(position, rotation);
-    OkayRobot::Pose goal_pose = this->kinematics_->get_inverse(
-        next_step_tf, OkayRobot::Pose(this->last_observation_->joint_positions));
+    OkayRobot::JointPose goal_pose = this->kinematics_->get_inverse(
+        next_step_tf, OkayRobot::JointPose(this->last_observation_->joint_positions));
 
     // update next step
     this->next_step_ = std::make_unique<OkayRobot::GamepadState>(next_step_tf, eef_position);
@@ -226,7 +226,7 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
     this->set_goal_pose_(goal_pose);
 }
 
-void RobotControlNode::set_goal_pose_(const OkayRobot::Pose& pose)
+void RobotControlNode::set_goal_pose_(const OkayRobot::JointPose& pose)
 {
     bool is_valid = OkayRobot::pose_is_valid(pose);
     std::string joints_string = vec_to_string(pose.joint_positions);

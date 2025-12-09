@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "okay_robot_common/description.hpp"
-#include "okay_robot_common/pose.hpp"
+#include "okay_robot_common/joint/joint_pose.hpp"
 #include "okay_robot_common/transform/transform.hpp"
 
 class Kinematics {
@@ -16,9 +16,9 @@ public:
     // get_eef_velocity(const OkayRobot::JointVelocities& joint_velocities, const OkayRobot::Pose&
     // last_pose)
     // get_joint_velocities(const OkayRobot::EEFVelocity& eef_velocity)
-    OkayRobot::Pose get_inverse(
-        const OkayRobot::Transform& eef_transform, const OkayRobot::Pose& last_pose);
-    OkayRobot::Transform get_forward(const OkayRobot::Pose& robot_pose);
+    OkayRobot::JointPose get_inverse(
+        const OkayRobot::Transform& eef_transform, const OkayRobot::JointPose& last_pose);
+    OkayRobot::Transform get_forward(const OkayRobot::JointPose& robot_pose);
 
 private:
     const OkayRobot::Description description_;

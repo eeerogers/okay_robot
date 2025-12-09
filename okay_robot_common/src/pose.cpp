@@ -1,10 +1,9 @@
 #include <algorithm>
 #include <cmath>
 
-#include "okay_robot_common/robot_state.hpp"
+#include "okay_robot_common/pose.hpp"
 
 namespace OkayRobot {
-
 Eigen::Vector<float, 6> pose_to_eigen_vector(const Pose pose)
 {
     Eigen::Vector<float, 6> as_eigen;

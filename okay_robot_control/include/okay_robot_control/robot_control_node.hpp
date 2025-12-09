@@ -1,7 +1,10 @@
 #pragma once
 
 #include "geometry_msgs/msg/twist.hpp"
-#include "okay_robot_common/robot_state.hpp"
+#include "okay_robot_common/command.hpp"
+#include "okay_robot_common/gamepad_state.hpp"
+#include "okay_robot_common/observation.hpp"
+#include "okay_robot_common/pose.hpp"
 #include "okay_robot_control/control/controller.hpp"
 #include "okay_robot_control/kinematics.hpp"
 #include "okay_robot_msgs/msg/gamepad_command.hpp"
@@ -25,7 +28,7 @@ private:
         const okay_robot_msgs::msg::GamepadCommand::SharedPtr msg);
 
     okay_robot_msgs::msg::ServoBusCommand okay_robot_to_servo_bus_command_(
-        OkayRobot::Command& command);
+        OkayRobot::JointPositionCommand& command);
     void set_goal_pose_(const OkayRobot::Pose& pose);
 
     const double control_freq_ = 30.0;

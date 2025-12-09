@@ -63,7 +63,7 @@ RobotControlNode::RobotControlNode()
 void RobotControlNode::timer_callback_()
 {
     // spin control loop
-    OkayRobot::Command next_command
+    OkayRobot::JointPositionCommand next_command
         = this->controller_->step_control_loop(*this->last_observation_.get());
 
     // send command to servo bus
@@ -76,7 +76,7 @@ void RobotControlNode::timer_callback_()
 }
 
 okay_robot_msgs::msg::ServoBusCommand RobotControlNode::okay_robot_to_servo_bus_command_(
-    OkayRobot::Command& command)
+    OkayRobot::JointPositionCommand& command)
 {
     auto bus_command = okay_robot_msgs::msg::ServoBusCommand();
     for (int i = 0; i < command.joint_positions.size(); i++) {

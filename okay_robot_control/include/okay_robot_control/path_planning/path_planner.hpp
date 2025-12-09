@@ -1,6 +1,6 @@
 #pragma once
 
-#include "okay_robot_common/robot_state.hpp"
+#include "okay_robot_common/pose.hpp"
 
 // protocol
 class PathPlanner {

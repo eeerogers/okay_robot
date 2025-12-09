@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "okay_robot_common/description.hpp"
-#include "okay_robot_common/robot_state.hpp"
+#include "okay_robot_common/pose.hpp"
 #include "okay_robot_common/transform/transform.hpp"
 
 class Kinematics {

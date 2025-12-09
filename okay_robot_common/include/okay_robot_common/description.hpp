@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "okay_robot_common/robot_state.hpp"
+#include "okay_robot_common/pose.hpp"
 #include "okay_robot_common/transform/denavit_hartenberg.hpp"
 
 namespace OkayRobot {

@@ -2,7 +2,9 @@
 
 #include <memory>
 
-#include "okay_robot_common/robot_state.hpp"
+#include "okay_robot_common/command.hpp"
+#include "okay_robot_common/observation.hpp"
+#include "okay_robot_common/pose.hpp"
 #include "okay_robot_control/control/controller.hpp"
 
 class DirectController : public Controller {
@@ -10,7 +12,7 @@ public:
     DirectController();
 
     virtual void set_goal_state(const OkayRobot::Pose& goal_state) override;
-    virtual OkayRobot::Command step_control_loop(
+    virtual OkayRobot::JointPositionCommand step_control_loop(
         const OkayRobot::Observation& current_state) override;
 
 private:

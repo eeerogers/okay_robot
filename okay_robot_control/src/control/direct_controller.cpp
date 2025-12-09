@@ -11,7 +11,8 @@ void DirectController::set_goal_state(const OkayRobot::Pose& goal_state)
     this->current_goal_ = std::make_unique<OkayRobot::Pose>(goal_state);
 }
 
-OkayRobot::Command DirectController::step_control_loop(const OkayRobot::Observation& current_state)
+OkayRobot::JointPositionCommand DirectController::step_control_loop(
+    const OkayRobot::Observation& current_state)
 {
-    return OkayRobot::Command(this->current_goal_->joint_positions);
+    return OkayRobot::JointPositionCommand(this->current_goal_->joint_positions);
 }

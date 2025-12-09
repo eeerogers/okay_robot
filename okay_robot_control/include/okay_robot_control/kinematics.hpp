@@ -13,9 +13,6 @@ public:
         : description_(this->setup_robot_description_())
         , joint_offsets_(this->setup_joint_offsets_()) { };
 
-    // get_eef_velocity(const OkayRobot::JointVelocities& joint_velocities, const OkayRobot::Pose&
-    // last_pose)
-    // get_joint_velocities(const OkayRobot::EEFVelocity& eef_velocity)
     OkayRobot::JointPose get_inverse(
         const OkayRobot::Transform& eef_transform, const OkayRobot::JointPose& last_pose);
     OkayRobot::Transform get_forward(const OkayRobot::JointPose& robot_pose);

@@ -20,7 +20,7 @@ def generate_launch_description() -> LaunchDescription:
                 executable="mujoco_sim_node",
                 parameters=[{"run_as_puppet": LaunchConfiguration("run_as_puppet")}],
             ),
-            Node(package="okay_robot_driver", executable="servo_bus_node"),
+            Node(package="okay_robot_servo", executable="servo_bus_node"),
             shutdown_on_exit,
         ]
     )

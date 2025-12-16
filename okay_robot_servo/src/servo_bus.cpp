@@ -1,7 +1,7 @@
 #include <numeric>
 #include <thread>
 
-#include "okay_robot_driver/servo_bus/servo_bus.hpp"
+#include "okay_robot_servo/servo_bus.hpp"
 
 /**
  * Builds and formats a packet to send to the servo bus

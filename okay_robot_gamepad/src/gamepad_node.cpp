@@ -1,6 +1,6 @@
-#include "okay_robot_driver/gamepad/gamepad_node.hpp"
+#include "okay_robot_gamepad/gamepad_node.hpp"
 #include "okay_robot_common/topic.hpp"
-#include "okay_robot_driver/gamepad/gamepad.hpp"
+#include "okay_robot_gamepad/gamepad.hpp"
 #include "okay_robot_msgs/msg/gamepad_command.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include <SDL2/SDL.h>

@@ -2,9 +2,9 @@
 
 #include <queue>
 
-#include "okay_robot_driver/servo_bus/servo_bus.hpp"
 #include "okay_robot_msgs/msg/servo_bus_command.hpp"
 #include "okay_robot_msgs/msg/servo_bus_observation.hpp"
+#include "okay_robot_servo/servo_bus.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 class ServoBusNode : public rclcpp::Node {

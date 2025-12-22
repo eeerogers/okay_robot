@@ -1,0 +1,6 @@
+[submodule "okay_robot_view/third_party/imgui"]
+	path = okay_robot_view/third_party/imgui
+	url = git@github.com:ocornut/imgui.git
+[submodule "okay_robot_view/third_party/implot"]
+	path = okay_robot_view/third_party/implot
+	url = git@github.com:epezent/implot.git

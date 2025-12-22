@@ -1,4 +1,5 @@
 uint8 id
+int64 time
 
 float32 position
 float32 speed

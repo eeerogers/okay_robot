@@ -1,3 +1,4 @@
+#include <chrono>
 #include <cmath>
 
 #include "okay_robot_common/print_data.hpp"
@@ -61,6 +62,10 @@ void ServoBusNode::publish_observation()
     // current: 2 bytes
     std::vector<okay_robot_msgs::msg::ServoObservation> observations;
     std::vector<uint8_t> data({ ServoRegister::CURRENT_POSITION, 0x0F });
+    auto receive_time = std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::steady_clock::now().time_since_epoch())
+                            .count();
+
     for (uint8_t i = 1; i <= 7; i++)
         data.push_back(i);
     this->servo_bus_.sync_read_data(data);
@@ -97,6 +102,7 @@ void ServoBusNode::publish_observation()
         // build ros message
         okay_robot_msgs::msg::ServoObservation new_observation;
         new_observation.id = data_buffer[2];
+        new_observation.time = receive_time;
         new_observation.position = servo_position_rad;
         new_observation.speed = servo_speed_rad_s;
         new_observation.load = servo_load_pct;

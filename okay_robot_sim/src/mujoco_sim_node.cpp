@@ -91,7 +91,7 @@ void MujocoSimNode::timer_callback_()
     }
 
     if (this->gui_shutdown_flag_.load()) {
-        std::exit(0);
+        rclcpp::shutdown();
     }
 }
 

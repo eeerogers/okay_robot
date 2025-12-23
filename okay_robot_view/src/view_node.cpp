@@ -6,6 +6,7 @@
 #include "implot.h"
 
 #include "okay_robot_common/topic.hpp"
+#include "okay_robot_view/time_series_data.hpp"
 #include "okay_robot_view/view_node.hpp"
 
 using std::placeholders::_1;
@@ -15,38 +16,55 @@ void glfw_error_callback_(int error, const char* description)
     std::cerr << "GLFW error " << error << ": " << description << std::endl;
 }
 
-void line_plot(
-    CircularBuffer<okay_robot_msgs::msg::ServoBusObservation::SharedPtr>& buffer, std::mutex& mutex)
+void line_plot(TimeSeriesData time_data)
 {
     // try to plot joint positions
     if (ImPlot::BeginPlot("Joint Positions", ImVec2(-1, -1))) {
-        std::lock_guard<std::mutex> lock(mutex);
-
-        std::vector<float> times;
-        std::unordered_map<int, std::vector<float>> positions;
-        for (const auto& bus_obs : buffer) {
-            // just skip if the full joint space is not represented for now
-            if (bus_obs->observations.size() != 7)
-                continue;
-
-            times.push_back(bus_obs->observations[0].time);
-            for (const auto& obs : bus_obs->observations) {
-                if (positions.find(obs.id) != positions.end()) {
-                    positions[obs.id].push_back(obs.position);
-                } else {
-                    positions[obs.id] = std::vector<float>({ obs.position });
-                }
-            }
-        }
 
         ImPlot::SetupAxes("time", "position (rad)");
-        if (times.size() > 0)
-            ImPlot::SetupAxesLimits(times.front(), times.back(), 0.0f, 2 * M_PIf, ImGuiCond_Always);
-        for (auto& plot : positions) {
-            ImPlot::PlotLine(("j" + std::to_string(plot.first)).c_str(), times.data(),
-                plot.second.data(), times.size());
+        if (time_data.time.size() > 0)
+            ImPlot::SetupAxesLimits(
+                time_data.time.front(), time_data.time.back(), 0.0f, 2 * M_PIf, ImGuiCond_Always);
+        for (auto& position_data : time_data.positions) {
+            ImPlot::PlotLine(("j" + std::to_string(position_data.first)).c_str(),
+                time_data.time.data(), position_data.second.data(), time_data.time.size());
         }
         ImPlot::EndPlot();
+    }
+}
+
+void table_plots(TimeSeriesData time_data)
+{
+    if (ImGui::BeginTable("Joint Positions", 3, 0, ImVec2(-1, -1))) {
+        ImGui::TableSetupColumn("Joint", ImGuiTableColumnFlags_WidthFixed, 75.0f);
+        ImGui::TableSetupColumn("Position", ImGuiTableColumnFlags_WidthFixed, 75.0f);
+        ImGui::TableSetupColumn("Plot");
+        ImGui::TableHeadersRow();
+
+        for (int i = 1; i <= 7; i++) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("j%d", i);
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Text("%.3f rad", time_data.positions[i].front());
+            ImGui::TableSetColumnIndex(2);
+            ImGui::PushID(i);
+
+            if (ImPlot::BeginPlot("##plot", ImVec2(-1, 104))) {
+
+                ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoTickLabels);
+                if (time_data.time.size() > 0)
+                    ImPlot::SetupAxesLimits(time_data.time.front(), time_data.time.back(), 0.0f,
+                        2 * M_PIf, ImGuiCond_Always);
+                ImPlot::PlotLine("##plot", time_data.time.data(), time_data.positions[i].data(),
+                    time_data.time.size());
+                ImPlot::EndPlot();
+            }
+
+            ImGui::PopID();
+        }
+
+        ImGui::EndTable();
     }
 }
 
@@ -101,9 +119,16 @@ void spin_window(CircularBuffer<okay_robot_msgs::msg::ServoBusObservation::Share
 
         ImGui::Begin("okay_robot", nullptr, window_flags);
 
+        std::lock_guard<std::mutex> lock(mutex);
+        TimeSeriesData time_data(buffer.to_vector());
+
         if (ImGui::BeginTabBar("ImPlotDemoTabs")) {
-            if (ImGui::BeginTabItem("Positions")) {
-                line_plot(buffer, mutex);
+            if (ImGui::BeginTabItem("Single Plot")) {
+                line_plot(time_data);
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Plot Table")) {
+                table_plots(time_data);
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();
@@ -168,6 +193,9 @@ void ViewNode::timer_callback_()
 void ViewNode::servo_bus_observation_subscriber_callback_(
     const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg)
 {
-    std::lock_guard<std::mutex> lock(this->mutex_);
-    this->observations_.push_back(msg);
+    // only add observation if it has all 7 servos (for now)
+    if (msg->observations.size() == 7) {
+        std::lock_guard<std::mutex> lock(this->mutex_);
+        this->observations_.push_back(msg);
+    }
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <iostream>
 #include <vector>
 
 template <typename T> class CircularBuffer {
@@ -13,6 +14,7 @@ public:
 
     void push_back(const T& item);
     size_t size() { return this->buffer_.size(); };
+    std::vector<T> to_vector();
 
     iterator begin() { return this->buffer_.begin(); }
     iterator end() { return this->buffer_.end(); }
@@ -23,7 +25,6 @@ public:
 private:
     std::deque<T> buffer_;
     const size_t size_;
-    int pointer_ = 0;
 };
 
 template <typename T> void CircularBuffer<T>::push_back(const T& item)
@@ -31,4 +32,9 @@ template <typename T> void CircularBuffer<T>::push_back(const T& item)
     this->buffer_.push_front(item);
     if (this->buffer_.size() > this->size_)
         this->buffer_.pop_back();
+}
+
+template <typename T> std::vector<T> CircularBuffer<T>::to_vector()
+{
+    return std::vector<T>(this->buffer_.begin(), this->buffer_.end());
 }

@@ -68,6 +68,44 @@ void table_plots(TimeSeriesData time_data)
     }
 }
 
+void table_data(okay_robot_msgs::msg::ServoBusObservation::SharedPtr& observation)
+{
+    if (ImGui::BeginTable("Servo Data", 7, 0, ImVec2(-1, -1))) {
+        ImGui::TableSetupColumn("Joint");
+        ImGui::TableSetupColumn("Position");
+        ImGui::TableSetupColumn("Speed");
+        ImGui::TableSetupColumn("Load");
+        ImGui::TableSetupColumn("Voltage");
+        ImGui::TableSetupColumn("Temp");
+        ImGui::TableSetupColumn("Current");
+        ImGui::TableHeadersRow();
+
+        for (auto& obs : observation->observations) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("j%d", obs.id);
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Text("%.3f rad", obs.position);
+            ImGui::TableSetColumnIndex(2);
+            ImGui::Text("%.3f rad/s", obs.speed);
+            ImGui::TableSetColumnIndex(3);
+            ImGui::Text("%.3f%%", obs.load);
+            ImGui::TableSetColumnIndex(4);
+            ImGui::Text("%.3fV", obs.voltage);
+            ImGui::TableSetColumnIndex(5);
+            ImGui::Text("%.3fC", obs.temperature);
+            ImGui::TableSetColumnIndex(6);
+            ImGui::Text("%.3fA", obs.current);
+
+            // are these necessary?
+            ImGui::PushID(obs.id);
+            ImGui::PopID();
+        }
+
+        ImGui::EndTable();
+    }
+}
+
 void spin_window(CircularBuffer<okay_robot_msgs::msg::ServoBusObservation::SharedPtr>& buffer,
     std::atomic<bool>& shutdown_flag, std::mutex& mutex)
 {
@@ -120,14 +158,20 @@ void spin_window(CircularBuffer<okay_robot_msgs::msg::ServoBusObservation::Share
         ImGui::Begin("okay_robot", nullptr, window_flags);
 
         std::lock_guard<std::mutex> lock(mutex);
+        std::vector<std::shared_ptr<okay_robot_msgs::msg::ServoBusObservation>> data_vector
+            = buffer.to_vector();
         TimeSeriesData time_data(buffer.to_vector());
 
         if (ImGui::BeginTabBar("ImPlotDemoTabs")) {
-            if (ImGui::BeginTabItem("Single Plot")) {
+            if (ImGui::BeginTabItem("All Data")) {
+                table_data(data_vector.front());
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Positions Plot")) {
                 line_plot(time_data);
                 ImGui::EndTabItem();
             }
-            if (ImGui::BeginTabItem("Plot Table")) {
+            if (ImGui::BeginTabItem("Positions Plot Table")) {
                 table_plots(time_data);
                 ImGui::EndTabItem();
             }

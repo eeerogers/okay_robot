@@ -95,7 +95,7 @@ void table_data(okay_robot_msgs::msg::ServoBusObservation::SharedPtr& observatio
             ImGui::TableSetColumnIndex(5);
             ImGui::Text("%.3fC", obs.temperature);
             ImGui::TableSetColumnIndex(6);
-            ImGui::Text("%.3fA", obs.current);
+            ImGui::Text("%.3fmA", obs.current * 1000.0f);
         }
 
         ImGui::EndTable();

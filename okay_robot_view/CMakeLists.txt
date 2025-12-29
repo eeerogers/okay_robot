@@ -34,14 +34,14 @@ set(IMPLOT_SOURCES
 )
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
-add_executable(gui_app
+add_executable(data_node
     ${SOURCES}
     ${IMGUI_SOURCES}
     ${IMPLOT_SOURCES}
 )
 
 target_include_directories(
-    gui_app PUBLIC
+    data_node PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     ${IMGUI_DIR}
@@ -49,10 +49,10 @@ target_include_directories(
     ${IMPLOT_DIR}
 )
 
-target_compile_options(gui_app PRIVATE -Wno-unused-parameter)
-ament_target_dependencies(gui_app okay_robot_msgs okay_robot_common rclcpp)
-target_link_libraries(gui_app glfw OpenGL::GL)
+target_compile_options(data_node PRIVATE -Wno-unused-parameter)
+ament_target_dependencies(data_node okay_robot_msgs okay_robot_common rclcpp)
+target_link_libraries(data_node glfw OpenGL::GL)
 
-install(TARGETS gui_app DESTINATION lib/${PROJECT_NAME})
+install(TARGETS data_node DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

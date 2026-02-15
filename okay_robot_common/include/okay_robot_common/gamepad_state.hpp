@@ -9,8 +9,8 @@ public:
         : transform(transform)
         , eef_position(eef_position) { };
 
-    Position position() { return this->transform.position; };
-    Rotation rotation() { return this->transform.rotation; };
+    Position position() { return this->transform.position(); };
+    Rotation rotation() { return this->transform.rotation(); };
 
     const Transform transform;
     const float eef_position;

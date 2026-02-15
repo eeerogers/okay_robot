@@ -1,12 +1,19 @@
 #include "okay_robot_common/transform/transform.hpp"
 
 namespace OkayRobot {
-Transform Transform::forward(const Transform& other) const
+void Transform::operator=(const Transform& other)
 {
-    return Transform(this->matrix * other.matrix);
+    this->matrix_ = other.matrix_;
+    this->position_ = other.position_;
+    this->rotation_ = other.rotation_;
 }
 
-Transform Transform::inverse() const { return Transform(this->matrix.inverse()); }
+Transform Transform::forward(const Transform& other) const
+{
+    return Transform(this->matrix_ * other.matrix_);
+}
+
+Transform Transform::inverse() const { return Transform(this->matrix_.inverse()); }
 
 Transform Transform::from_dh(const DenavitHartenberg& dh, const float& theta)
 {
@@ -30,8 +37,8 @@ Transform Transform::from_position_rotation(const Position& position, const Rota
 {
     Eigen::Matrix4f matrix = Eigen::Matrix4f::Identity();
 
-    matrix.block(0, 0, 3, 3) = rotation.matrix;
-    matrix.block(0, 3, 3, 1) = position.vector;
+    matrix.block(0, 0, 3, 3) = rotation.matrix();
+    matrix.block(0, 3, 3, 1) = position.vector();
 
     return Transform(matrix);
 }

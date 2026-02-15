@@ -49,9 +49,10 @@ RobotControlNode::RobotControlNode()
 
     // initialize current state
     auto current_time = std::chrono::steady_clock::now();
-    this->last_observation_ = std::make_unique<OkayRobot::Observation>(current_time,
-        std::vector<float>({ M_PI_2f, M_PI_2f, 3.0 * M_PI_2f, M_PIf, M_PI_2f, M_PIf, M_PI_4f }),
-        std::vector<float>(7, 0.0));
+    this->last_observation_
+        = std::make_unique<OkayRobot::Observation>(OkayRobot::Observation { current_time,
+            std::vector<float>({ M_PI_2f, M_PI_2f, 3.0 * M_PI_2f, M_PIf, M_PI_2f, M_PIf, M_PI_4f }),
+            std::vector<float>(7, 0.0) });
 
     OkayRobot::Transform step_tf = this->kinematics_->get_forward(
         OkayRobot::JointPose(this->last_observation_->joint_positions));
@@ -125,7 +126,8 @@ void RobotControlNode::servo_bus_observation_subscriber_callback_(
     const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg)
 {
     auto current_time = std::chrono::steady_clock::now();
-    std::vector<float> joint_positions(this->last_observation_->joint_positions);
+    std::vector<float> joint_pos(this->last_observation_->joint_positions);
+    std::vector<float> joint_vel(this->last_observation_->joint_velocities);
 
     // TODO: un-hardcode 7 here
     for (auto observation : msg->observations) {
@@ -135,12 +137,22 @@ void RobotControlNode::servo_bus_observation_subscriber_callback_(
             continue;
         }
 
-        joint_positions[observation.id - 1] = observation.position;
+        joint_pos[observation.id - 1] = observation.position;
+        joint_vel[observation.id - 1] = observation.speed;
     }
 
-    OkayRobot::Observation new_observation(
-        current_time, joint_positions, std::vector<float>(7, 0.0));
+    OkayRobot::Observation new_observation({ current_time, joint_pos, joint_vel });
     this->last_observation_ = std::make_unique<OkayRobot::Observation>(new_observation);
+
+    // test jacobian
+    Eigen::Matrix<float, 6, 6> jacobian
+        = this->kinematics_->get_jacobian(OkayRobot::JointPose(new_observation.joint_positions));
+    Eigen::Vector<float, 6> joint_velocities(std::vector<float>(
+        new_observation.joint_velocities.begin(), new_observation.joint_velocities.begin() + 6)
+            .data());
+    Eigen::Vector<float, 6> eef_velocity = jacobian * joint_velocities;
+
+    RCLCPP_INFO_STREAM(this->get_logger(), eef_velocity);
 }
 
 void RobotControlNode::gamepad_command_subscriber_callback_(
@@ -209,18 +221,19 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
         return;
 
     // increment step in gamepad direction
-    OkayRobot::Position position(this->last_step_->position().vector + xyz);
-    OkayRobot::Rotation rotation(
-        this->last_step_->rotation().matrix * OkayRobot::Rotation(rpy[0], rpy[1], rpy[2]).matrix);
-    float eef_position = this->last_step_->eef_position + (eef_dir * this->gamepad_speed_angular_);
-    eef_position = std::clamp(eef_position, (float)0.0, M_PI_2f);
+    OkayRobot::Position position(this->last_step_->position().vector() + xyz);
+    OkayRobot::Rotation rotation(this->last_step_->rotation().matrix()
+        * OkayRobot::Rotation(rpy[0], rpy[1], rpy[2]).matrix());
+    float gripper_position
+        = this->last_step_->eef_position + (eef_dir * this->gamepad_speed_angular_);
+    gripper_position = std::clamp(gripper_position, (float)0.0, M_PI_2f);
 
     auto next_step_tf = OkayRobot::Transform(position, rotation);
     OkayRobot::JointPose goal_pose = this->kinematics_->get_inverse(
         next_step_tf, OkayRobot::JointPose(this->last_observation_->joint_positions));
 
     // update next step
-    this->next_step_ = std::make_unique<OkayRobot::GamepadState>(next_step_tf, eef_position);
+    this->next_step_ = std::make_unique<OkayRobot::GamepadState>(next_step_tf, gripper_position);
 
     // update controller goal state
     this->set_goal_pose_(goal_pose);
@@ -228,13 +241,7 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
 
 void RobotControlNode::set_goal_pose_(const OkayRobot::JointPose& pose)
 {
-    bool is_valid = OkayRobot::pose_is_valid(pose);
-    std::string joints_string = vec_to_string(pose.joint_positions);
-    RCLCPP_INFO(this->get_logger(), "current pose is %s:\n[%s]", is_valid ? "valid" : "invalid",
-        joints_string.c_str());
-
-    if (!is_valid)
-        return;
-
-    this->controller_->set_goal_state(pose);
+    if (OkayRobot::pose_is_valid(pose)) {
+        this->controller_->set_goal_state(pose);
+    }
 }

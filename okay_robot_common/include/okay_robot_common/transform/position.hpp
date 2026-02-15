@@ -6,17 +6,18 @@ namespace OkayRobot {
 class Position {
 public:
     Position(const Eigen::Vector3f vector)
-        : vector(vector) { };
+        : vector_(vector) { };
     Position(const float& x, const float& y, const float& z)
         : Position(this->from_floats(x, y, z)) { };
 
-    const Eigen::Vector3f vector;
+    inline const Eigen::Vector3f vector() const { return this->vector_; };
+    inline float x() const { return this->vector_[0]; };
+    inline float y() const { return this->vector_[1]; };
+    inline float z() const { return this->vector_[2]; };
 
-    const float x() const;
-    const float y() const;
-    const float z() const;
+    static Eigen::Vector3f from_floats(const float& x, const float& y, const float& z);
 
 private:
-    static Eigen::Vector3f from_floats(const float& x, const float& y, const float& z);
+    Eigen::Vector3f vector_;
 };
 }

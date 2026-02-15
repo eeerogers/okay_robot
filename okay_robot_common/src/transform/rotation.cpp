@@ -2,12 +2,6 @@
 
 namespace OkayRobot {
 
-const Eigen::Vector3f Rotation::x() const { return this->matrix.block<3, 1>(0, 0); }
-
-const Eigen::Vector3f Rotation::y() const { return this->matrix.block<3, 1>(0, 1); }
-
-const Eigen::Vector3f Rotation::z() const { return this->matrix.block<3, 1>(0, 2); }
-
 Rotation Rotation::from_euler(const float& x, const float& y, const float& z)
 {
     // just xyz for now

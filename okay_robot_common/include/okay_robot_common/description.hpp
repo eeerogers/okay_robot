@@ -13,12 +13,7 @@ struct Bounds {
     const float lower;
 };
 
-class JointDescription {
-public:
-    JointDescription(const OkayRobot::DenavitHartenberg dh, const Bounds bounds)
-        : dh(dh)
-        , bounds(bounds) { };
-
+struct JointDescription {
     const OkayRobot::DenavitHartenberg dh;
     const Bounds bounds;
 };

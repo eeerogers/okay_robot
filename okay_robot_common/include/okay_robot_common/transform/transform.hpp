@@ -10,26 +10,33 @@ namespace OkayRobot {
 class Transform {
 public:
     Transform()
-        : matrix(Eigen::Matrix4f::Identity())
-        , position(matrix.block<3, 1>(0, 3))
-        , rotation(matrix.block<3, 3>(0, 0)) { };
+        : matrix_(Eigen::Matrix4f::Identity())
+        , position_(matrix_.block<3, 1>(0, 3))
+        , rotation_(matrix_.block<3, 3>(0, 0)) { };
     Transform(const Eigen::Matrix4f& matrix)
-        : matrix(matrix)
-        , position(matrix.block<3, 1>(0, 3))
-        , rotation(matrix.block<3, 3>(0, 0)) { };
+        : matrix_(matrix)
+        , position_(matrix.block<3, 1>(0, 3))
+        , rotation_(matrix.block<3, 3>(0, 0)) { };
     Transform(const Position position, const Rotation rotation)
         : Transform(this->from_position_rotation(position, rotation)) { };
     Transform(const DenavitHartenberg& dh, const float& theta)
         : Transform(this->from_dh(dh, theta)) { };
 
-    const Eigen::Matrix4f matrix;
-    const Position position;
-    const Rotation rotation;
+    void operator=(const Transform& other);
+
+    inline const Eigen::Matrix4f matrix() const { return this->matrix_; };
+    inline const Position position() const { return this->position_; };
+    inline const Rotation rotation() const { return this->rotation_; };
 
     Transform forward(const Transform& other) const;
     Transform inverse() const;
 
     static Transform from_dh(const DenavitHartenberg& dh, const float& theta);
     static Transform from_position_rotation(const Position& position, const Rotation& rotation);
+
+private:
+    Eigen::Matrix4f matrix_;
+    Position position_;
+    Rotation rotation_;
 };
 }

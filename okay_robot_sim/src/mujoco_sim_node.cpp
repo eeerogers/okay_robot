@@ -102,6 +102,7 @@ void MujocoSimNode::publish_observations_()
         auto new_observation = okay_robot_msgs::msg::ServoObservation();
         new_observation.id = i + 1;
         new_observation.position = this->d_->qpos[i];
+        new_observation.speed = this->d_->qvel[i];
 
         observations.push_back(new_observation);
     }

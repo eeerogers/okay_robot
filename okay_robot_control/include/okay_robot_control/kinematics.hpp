@@ -13,9 +13,10 @@ public:
         : description_(this->setup_robot_description_())
         , joint_offsets_(this->setup_joint_offsets_()) { };
 
-    OkayRobot::JointPose get_inverse(
-        const OkayRobot::Transform& eef_transform, const OkayRobot::JointPose& last_pose);
-    OkayRobot::Transform get_forward(const OkayRobot::JointPose& robot_pose);
+    const OkayRobot::JointPose get_inverse(
+        const OkayRobot::Transform& eef_transform, const OkayRobot::JointPose& last_pose) const;
+    const OkayRobot::Transform get_forward(const OkayRobot::JointPose& robot_pose) const;
+    Eigen::Matrix<float, 6, 6> get_jacobian(const OkayRobot::JointPose& robot_pose) const;
 
 private:
     const OkayRobot::Description description_;

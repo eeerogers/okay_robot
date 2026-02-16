@@ -11,6 +11,8 @@
 
 using std::placeholders::_1;
 
+namespace OkayRobot {
+
 void glfw_error_callback_(int error, const char* description)
 {
     std::cerr << "GLFW error " << error << ": " << description << std::endl;
@@ -204,12 +206,12 @@ ViewNode::ViewNode()
 {
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::duration<double>(1.0 / this->poll_freq_));
-    this->timer_ = this->create_wall_timer(duration, std::bind(&ViewNode::timer_callback_, this));
+    this->timer_ = this->create_wall_timer(duration, std::bind(&ViewNode::timerCallback_, this));
 
     this->servo_bus_observation_subscriber_
         = this->create_subscription<okay_robot_msgs::msg::ServoBusObservation>(
-            TOPIC_SERVO_BUS_OBSERVATION, 10,
-            std::bind(&ViewNode::servo_bus_observation_subscriber_callback_, this, _1));
+            OkayRobotTopic::SERVO_BUS_OBSERVATION, 10,
+            std::bind(&ViewNode::servoBusObservationSubscriberCallback_, this, _1));
 
     this->gui_shutdown_flag_.store(false);
     auto gui_thread = std::bind(spin_window, std::ref(this->observations_),
@@ -223,14 +225,14 @@ ViewNode::~ViewNode()
     this->gui_thread_.join();
 }
 
-void ViewNode::timer_callback_()
+void ViewNode::timerCallback_()
 {
     if (this->gui_shutdown_flag_.load()) {
         rclcpp::shutdown();
     }
 }
 
-void ViewNode::servo_bus_observation_subscriber_callback_(
+void ViewNode::servoBusObservationSubscriberCallback_(
     const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg)
 {
     // only add observation if it has all 7 servos (for now)
@@ -238,4 +240,6 @@ void ViewNode::servo_bus_observation_subscriber_callback_(
         std::lock_guard<std::mutex> lock(this->mutex_);
         this->observations_.push_back(msg);
     }
+}
+
 }

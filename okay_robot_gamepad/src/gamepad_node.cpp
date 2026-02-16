@@ -6,6 +6,8 @@
 #include <SDL2/SDL.h>
 #include <string>
 
+namespace OkayRobot {
+
 GamepadNode::GamepadNode()
     : Node("gamepad_node")
 {
@@ -29,9 +31,9 @@ GamepadNode::GamepadNode()
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::duration<double>(1.0 / this->poll_freq_));
-    this->timer_ = this->create_wall_timer(duration, std::bind(&GamepadNode::timer_callback, this));
+    this->timer_ = this->create_wall_timer(duration, std::bind(&GamepadNode::timerCallback_, this));
     this->publisher_
-        = this->create_publisher<okay_robot_msgs::msg::GamepadCommand>(TOPIC_GAMEPAD, 10);
+        = this->create_publisher<okay_robot_msgs::msg::GamepadCommand>(OkayRobotTopic::GAMEPAD, 10);
 
     RCLCPP_INFO(this->get_logger(), "Initialized timer");
 }
@@ -42,7 +44,7 @@ GamepadNode::~GamepadNode()
     SDL_Quit();
 }
 
-void GamepadNode::timer_callback()
+void GamepadNode::timerCallback_()
 {
     while (SDL_PollEvent(&this->event_)) {
         switch (this->event_.type) {
@@ -71,4 +73,6 @@ void GamepadNode::timer_callback()
     }
 
     this->publisher_->publish(this->gamepad_state_);
+}
+
 }

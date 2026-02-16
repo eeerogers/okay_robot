@@ -4,13 +4,14 @@
 #include "rclcpp/rclcpp.hpp"
 #include <SDL2/SDL.h>
 
+namespace OkayRobot {
 class GamepadNode : public rclcpp::Node {
 public:
     GamepadNode();
     ~GamepadNode();
 
 private:
-    void timer_callback();
+    void timerCallback_();
 
     double poll_freq_ = 100.0;
     SDL_Joystick* gamepad_ = nullptr;
@@ -21,3 +22,4 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<okay_robot_msgs::msg::GamepadCommand>::SharedPtr publisher_;
 };
+}

@@ -1,6 +1,8 @@
 #include "okay_robot_gamepad/gamepad.hpp"
 #include "okay_robot_msgs/msg/gamepad_command.hpp"
 
+namespace OkayRobot {
+
 void set_button(okay_robot_msgs::msg::GamepadCommand* msg, const int& val, const bool& state)
 {
     switch (val) {
@@ -164,4 +166,6 @@ void set_dpad(okay_robot_msgs::msg::GamepadCommand* msg, const int& val, const b
         msg->dpad_left = state;
         break;
     }
+}
+
 }

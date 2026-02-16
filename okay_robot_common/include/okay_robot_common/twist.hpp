@@ -3,12 +3,7 @@
 #include <Eigen/Dense>
 
 namespace OkayRobot {
-class Twist {
-public:
-    Twist(Eigen::Vector3f linear, Eigen::Vector3f angular)
-        : linear(linear)
-        , angular(angular) { };
-
+struct Twist {
     const Eigen::Vector3f linear;
     const Eigen::Vector3f angular;
 };

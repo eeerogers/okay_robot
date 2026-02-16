@@ -15,6 +15,8 @@
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
+namespace OkayRobot {
+
 MujocoSimNode::MujocoSimNode()
     : Node("mujoco_sim_node")
 {
@@ -39,7 +41,7 @@ MujocoSimNode::MujocoSimNode()
 
     // spin off gui thread
     this->gui_shutdown_flag_.store(false);
-    auto mujoco_gui_thread = std::bind(spin_mujoco_gui, this->m_, this->d_,
+    auto mujoco_gui_thread = std::bind(spinMujocoGUI, this->m_, this->d_,
         std::ref(this->gui_shutdown_flag_), std::ref(this->mutex_));
     this->gui_thread_ = std::thread(mujoco_gui_thread);
 
@@ -47,7 +49,7 @@ MujocoSimNode::MujocoSimNode()
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::duration<double>(this->m_->opt.timestep));
     this->timer_
-        = this->create_wall_timer(duration, std::bind(&MujocoSimNode::timer_callback_, this));
+        = this->create_wall_timer(duration, std::bind(&MujocoSimNode::timerCallback_, this));
 
     // set up pubs/subs
     if (run_as_puppet) {
@@ -56,19 +58,19 @@ MujocoSimNode::MujocoSimNode()
 
         this->servo_bus_observation_subscriber_
             = this->create_subscription<okay_robot_msgs::msg::ServoBusObservation>(
-                TOPIC_SERVO_BUS_OBSERVATION, 10,
-                std::bind(&MujocoSimNode::servo_bus_observation_subscriber_callback_, this, _1));
+                OkayRobotTopic::SERVO_BUS_OBSERVATION, 10,
+                std::bind(&MujocoSimNode::servoBusObservationSubscriberCallback_, this, _1));
     } else {
         RCLCPP_INFO(this->get_logger(),
             "running in full sim mode, generating servo bus driver observations from mujoco");
 
         this->servo_bus_observation_publisher_
             = this->create_publisher<okay_robot_msgs::msg::ServoBusObservation>(
-                TOPIC_SERVO_BUS_OBSERVATION, 10);
+                OkayRobotTopic::SERVO_BUS_OBSERVATION, 10);
         this->servo_bus_command_subscriber_
             = this->create_subscription<okay_robot_msgs::msg::ServoBusCommand>(
-                TOPIC_SERVO_BUS_COMMAND, 10,
-                std::bind(&MujocoSimNode::servo_bus_command_subscriber_callback_, this, _1));
+                OkayRobotTopic::SERVO_BUS_COMMAND, 10,
+                std::bind(&MujocoSimNode::servoBusCommandSubscriberCallback_, this, _1));
     }
 }
 
@@ -81,13 +83,13 @@ MujocoSimNode::~MujocoSimNode()
     mj_deleteModel(this->m_);
 }
 
-void MujocoSimNode::timer_callback_()
+void MujocoSimNode::timerCallback_()
 {
     std::lock_guard<std::mutex> lock(this->mutex_);
     mj_step(this->m_, this->d_);
 
     if (this->servo_bus_observation_publisher_) {
-        this->publish_observations_();
+        this->publishObservations_();
     }
 
     if (this->gui_shutdown_flag_.load()) {
@@ -95,7 +97,7 @@ void MujocoSimNode::timer_callback_()
     }
 }
 
-void MujocoSimNode::publish_observations_()
+void MujocoSimNode::publishObservations_()
 {
     std::vector<okay_robot_msgs::msg::ServoObservation> observations;
     for (int i = 0; i < this->m_->nu; i++) {
@@ -113,7 +115,7 @@ void MujocoSimNode::publish_observations_()
     this->servo_bus_observation_publisher_->publish(servo_bus_observation);
 }
 
-void MujocoSimNode::servo_bus_command_subscriber_callback_(
+void MujocoSimNode::servoBusCommandSubscriberCallback_(
     const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg)
 {
     std::lock_guard<std::mutex> lock(this->mutex_);
@@ -128,7 +130,7 @@ void MujocoSimNode::servo_bus_command_subscriber_callback_(
     }
 }
 
-void MujocoSimNode::servo_bus_observation_subscriber_callback_(
+void MujocoSimNode::servoBusObservationSubscriberCallback_(
     const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg)
 {
     std::lock_guard<std::mutex> lock(this->mutex_);
@@ -141,4 +143,6 @@ void MujocoSimNode::servo_bus_observation_subscriber_callback_(
 
         this->d_->ctrl[observation.id - 1] = observation.position;
     }
+}
+
 }

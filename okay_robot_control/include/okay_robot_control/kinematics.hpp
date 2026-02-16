@@ -7,21 +7,24 @@
 #include "okay_robot_common/joint/joint_pose.hpp"
 #include "okay_robot_common/transform/transform.hpp"
 
+namespace OkayRobot {
 class Kinematics {
 public:
     Kinematics()
-        : description_(this->setup_robot_description_())
-        , joint_offsets_(this->setup_joint_offsets_()) { };
+        : description_(this->setupRobotDescription_())
+        , joint_offsets_(this->setupJointOffsets_()) { };
 
-    const OkayRobot::JointPose get_inverse(
-        const OkayRobot::Transform& eef_transform, const OkayRobot::JointPose& last_pose) const;
-    const OkayRobot::Transform get_forward(const OkayRobot::JointPose& robot_pose) const;
-    Eigen::Matrix<float, 6, 6> get_jacobian(const OkayRobot::JointPose& robot_pose) const;
+    const JointPose getInverse(const Transform& eef_transform, const JointPose& last_pose) const;
+    const Transform getForward(const JointPose& robot_pose) const;
+    Eigen::Matrix<float, 6, 6> getJacobian(const JointPose& robot_pose) const;
+
+    bool poseIsValid(const JointPose pose) const;
 
 private:
-    const OkayRobot::Description description_;
+    const Description description_;
     const Eigen::Vector<float, 6> joint_offsets_;
 
-    const OkayRobot::Description setup_robot_description_();
-    const Eigen::Vector<float, 6> setup_joint_offsets_();
+    const Description setupRobotDescription_();
+    const Eigen::Vector<float, 6> setupJointOffsets_();
 };
+}

@@ -9,14 +9,15 @@
 #include "okay_robot_view/circular_buffer.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+namespace OkayRobot {
 class ViewNode : public rclcpp::Node {
 public:
     ViewNode();
     ~ViewNode();
 
 private:
-    void timer_callback_();
-    void servo_bus_observation_subscriber_callback_(
+    void timerCallback_();
+    void servoBusObservationSubscriberCallback_(
         const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg);
 
     std::mutex mutex_;
@@ -33,3 +34,5 @@ private:
         servo_bus_observation_subscriber_
         = nullptr;
 };
+
+}

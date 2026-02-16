@@ -18,9 +18,9 @@ public:
         , position_(matrix.block<3, 1>(0, 3))
         , rotation_(matrix.block<3, 3>(0, 0)) { };
     Transform(const Position position, const Rotation rotation)
-        : Transform(this->from_position_rotation(position, rotation)) { };
+        : Transform(this->fromPositionRotation(position, rotation)) { };
     Transform(const DenavitHartenberg& dh, const float& theta)
-        : Transform(this->from_dh(dh, theta)) { };
+        : Transform(this->fromDH(dh, theta)) { };
 
     void operator=(const Transform& other);
 
@@ -31,8 +31,8 @@ public:
     Transform forward(const Transform& other) const;
     Transform inverse() const;
 
-    static Transform from_dh(const DenavitHartenberg& dh, const float& theta);
-    static Transform from_position_rotation(const Position& position, const Rotation& rotation);
+    static Transform fromDH(const DenavitHartenberg& dh, const float& theta);
+    static Transform fromPositionRotation(const Position& position, const Rotation& rotation);
 
 private:
     Eigen::Matrix4f matrix_;

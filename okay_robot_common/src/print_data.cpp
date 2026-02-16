@@ -1,6 +1,6 @@
 #include "okay_robot_common/print_data.hpp"
 
-void print_message(std::vector<uint8_t>& message)
+void printMessage(std::vector<uint8_t>& message)
 {
     printf("message: [ ");
     for (uint8_t byte : message) {

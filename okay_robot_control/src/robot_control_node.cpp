@@ -16,6 +16,8 @@
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
+namespace OkayRobot {
+
 RobotControlNode::RobotControlNode()
     : Node("robot_control_node")
 {
@@ -27,57 +29,56 @@ RobotControlNode::RobotControlNode()
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::duration<double>(1.0 / this->control_freq_));
     this->timer_
-        = this->create_wall_timer(duration, std::bind(&RobotControlNode::timer_callback_, this));
+        = this->create_wall_timer(duration, std::bind(&RobotControlNode::timerCallback_, this));
 
     // set up pubs/subs
     this->servo_bus_command_publisher_
         = this->create_publisher<okay_robot_msgs::msg::ServoBusCommand>(
-            TOPIC_SERVO_BUS_COMMAND, 10);
+            OkayRobotTopic::SERVO_BUS_COMMAND, 10);
     this->okay_robot_goal_subscriber_
-        = this->create_subscription<okay_robot_msgs::msg::OkayRobotGoal>(TOPIC_OKAY_ROBOT_GOAL, 10,
-            std::bind(&RobotControlNode::okay_robot_goal_subscriber_callback_, this, _1));
-    this->twist_subscriber_
-        = this->create_subscription<geometry_msgs::msg::Twist>(TOPIC_OKAY_ROBOT_GOAL_TWIST, 10,
-            std::bind(&RobotControlNode::twist_subscriber_callback_, this, _1));
+        = this->create_subscription<okay_robot_msgs::msg::OkayRobotGoal>(
+            OkayRobotTopic::OKAY_ROBOT_GOAL, 10,
+            std::bind(&RobotControlNode::goalSubscriberCallback_, this, _1));
+    this->twist_subscriber_ = this->create_subscription<geometry_msgs::msg::Twist>(
+        OkayRobotTopic::OKAY_ROBOT_GOAL_TWIST, 10,
+        std::bind(&RobotControlNode::twistSubscriberCallback_, this, _1));
     this->servo_bus_observation_subscriber_
         = this->create_subscription<okay_robot_msgs::msg::ServoBusObservation>(
-            TOPIC_SERVO_BUS_OBSERVATION, 10,
-            std::bind(&RobotControlNode::servo_bus_observation_subscriber_callback_, this, _1));
+            OkayRobotTopic::SERVO_BUS_OBSERVATION, 10,
+            std::bind(&RobotControlNode::servoBusObservationSubscriberCallback_, this, _1));
     this->gamepad_command_subscriber_
-        = this->create_subscription<okay_robot_msgs::msg::GamepadCommand>(TOPIC_GAMEPAD, 10,
-            std::bind(&RobotControlNode::gamepad_command_subscriber_callback_, this, _1));
+        = this->create_subscription<okay_robot_msgs::msg::GamepadCommand>(OkayRobotTopic::GAMEPAD,
+            10, std::bind(&RobotControlNode::gamepadCommandSubscriberCallback_, this, _1));
 
     // initialize current state
     auto current_time = std::chrono::steady_clock::now();
-    this->last_observation_
-        = std::make_unique<OkayRobot::Observation>(OkayRobot::Observation { current_time,
-            std::vector<float>({ M_PI_2f, M_PI_2f, 3.0 * M_PI_2f, M_PIf, M_PI_2f, M_PIf, M_PI_4f }),
-            std::vector<float>(7, 0.0) });
+    this->last_observation_ = std::make_unique<Observation>(Observation { current_time,
+        std::vector<float>({ M_PI_2f, M_PI_2f, 3.0 * M_PI_2f, M_PIf, M_PI_2f, M_PIf, M_PI_4f }),
+        std::vector<float>(7, 0.0) });
 
-    OkayRobot::Transform step_tf = this->kinematics_->get_forward(
-        OkayRobot::JointPose(this->last_observation_->joint_positions));
-    auto new_state = OkayRobot::GamepadState(step_tf, M_PI_4f);
-    this->last_step_ = std::make_unique<OkayRobot::GamepadState>(new_state);
-    this->next_step_ = std::make_unique<OkayRobot::GamepadState>(new_state);
+    Transform step_tf
+        = this->kinematics_->getForward(JointPose(this->last_observation_->joint_positions));
+    auto new_state = GamepadState(step_tf, M_PI_4f);
+    this->last_step_ = std::make_unique<GamepadState>(new_state);
+    this->next_step_ = std::make_unique<GamepadState>(new_state);
 }
 
-void RobotControlNode::timer_callback_()
+void RobotControlNode::timerCallback_()
 {
     // spin control loop
-    OkayRobot::JointPose next_command
-        = this->controller_->step_control_loop(*this->last_observation_.get());
+    JointPose next_command = this->controller_->stepControlLoop(*this->last_observation_.get());
 
     // send command to servo bus
     okay_robot_msgs::msg::ServoBusCommand bus_command
-        = this->okay_robot_to_servo_bus_command_(next_command);
+        = this->jointPoseToServoBusCommand_(next_command);
     this->servo_bus_command_publisher_->publish(bus_command);
 
     // update state variables
-    this->last_step_ = std::make_unique<OkayRobot::GamepadState>(*this->next_step_.get());
+    this->last_step_ = std::make_unique<GamepadState>(*this->next_step_.get());
 }
 
-okay_robot_msgs::msg::ServoBusCommand RobotControlNode::okay_robot_to_servo_bus_command_(
-    OkayRobot::JointPose& command)
+okay_robot_msgs::msg::ServoBusCommand RobotControlNode::jointPoseToServoBusCommand_(
+    JointPose& command)
 {
     auto bus_command = okay_robot_msgs::msg::ServoBusCommand();
     for (int i = 0; i < command.joint_positions.size(); i++) {
@@ -99,30 +100,29 @@ okay_robot_msgs::msg::ServoBusCommand RobotControlNode::okay_robot_to_servo_bus_
     return bus_command;
 }
 
-void RobotControlNode::okay_robot_goal_subscriber_callback_(
-    const okay_robot_msgs::msg::OkayRobotGoal msg)
+void RobotControlNode::goalSubscriberCallback_(const okay_robot_msgs::msg::OkayRobotGoal msg)
 {
     // catch robot command
-    OkayRobot::JointPose new_goal(msg.joint_positions);
-    this->set_goal_pose_(new_goal);
+    JointPose new_goal(msg.joint_positions);
+    this->setGoalPose_(new_goal);
 }
 
-void RobotControlNode::twist_subscriber_callback_(const geometry_msgs::msg::Twist msg)
+void RobotControlNode::twistSubscriberCallback_(const geometry_msgs::msg::Twist msg)
 {
     // convert to transform
-    OkayRobot::Position position(msg.linear.x, msg.linear.y, msg.linear.z);
-    OkayRobot::Rotation rotation(msg.angular.x, msg.angular.y, msg.angular.z);
-    OkayRobot::Transform twist_tf(position, rotation);
+    Position position(msg.linear.x, msg.linear.y, msg.linear.z);
+    Rotation rotation(msg.angular.x, msg.angular.y, msg.angular.z);
+    Transform twist_tf(position, rotation);
 
     // calculate inverse kinematics
-    OkayRobot::JointPose robot_pose(this->kinematics_->get_inverse(
-        twist_tf, OkayRobot::JointPose(this->last_observation_->joint_positions)));
+    JointPose robot_pose(this->kinematics_->getInverse(
+        twist_tf, JointPose(this->last_observation_->joint_positions)));
 
     // send joint positions to robot
-    this->set_goal_pose_(robot_pose);
+    this->setGoalPose_(robot_pose);
 }
 
-void RobotControlNode::servo_bus_observation_subscriber_callback_(
+void RobotControlNode::servoBusObservationSubscriberCallback_(
     const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg)
 {
     auto current_time = std::chrono::steady_clock::now();
@@ -141,12 +141,12 @@ void RobotControlNode::servo_bus_observation_subscriber_callback_(
         joint_vel[observation.id - 1] = observation.speed;
     }
 
-    OkayRobot::Observation new_observation({ current_time, joint_pos, joint_vel });
-    this->last_observation_ = std::make_unique<OkayRobot::Observation>(new_observation);
+    Observation new_observation({ current_time, joint_pos, joint_vel });
+    this->last_observation_ = std::make_unique<Observation>(new_observation);
 
     // test jacobian
     Eigen::Matrix<float, 6, 6> jacobian
-        = this->kinematics_->get_jacobian(OkayRobot::JointPose(new_observation.joint_positions));
+        = this->kinematics_->getJacobian(JointPose(new_observation.joint_positions));
     Eigen::Vector<float, 6> joint_velocities(std::vector<float>(
         new_observation.joint_velocities.begin(), new_observation.joint_velocities.begin() + 6)
             .data());
@@ -155,7 +155,7 @@ void RobotControlNode::servo_bus_observation_subscriber_callback_(
     RCLCPP_INFO_STREAM(this->get_logger(), eef_velocity);
 }
 
-void RobotControlNode::gamepad_command_subscriber_callback_(
+void RobotControlNode::gamepadCommandSubscriberCallback_(
     const okay_robot_msgs::msg::GamepadCommand::SharedPtr msg)
 {
     Eigen::Vector3f xyz = Eigen::Vector3f::Zero();
@@ -221,27 +221,29 @@ void RobotControlNode::gamepad_command_subscriber_callback_(
         return;
 
     // increment step in gamepad direction
-    OkayRobot::Position position(this->last_step_->position().vector() + xyz);
-    OkayRobot::Rotation rotation(this->last_step_->rotation().matrix()
-        * OkayRobot::Rotation(rpy[0], rpy[1], rpy[2]).matrix());
+    Position position(this->last_step_->position().vector() + xyz);
+    Rotation rotation(
+        this->last_step_->rotation().matrix() * Rotation(rpy[0], rpy[1], rpy[2]).matrix());
     float gripper_position
         = this->last_step_->eef_position + (eef_dir * this->gamepad_speed_angular_);
     gripper_position = std::clamp(gripper_position, (float)0.0, M_PI_2f);
 
-    auto next_step_tf = OkayRobot::Transform(position, rotation);
-    OkayRobot::JointPose goal_pose = this->kinematics_->get_inverse(
-        next_step_tf, OkayRobot::JointPose(this->last_observation_->joint_positions));
+    auto next_step_tf = Transform(position, rotation);
+    JointPose goal_pose = this->kinematics_->getInverse(
+        next_step_tf, JointPose(this->last_observation_->joint_positions));
 
     // update next step
-    this->next_step_ = std::make_unique<OkayRobot::GamepadState>(next_step_tf, gripper_position);
+    this->next_step_ = std::make_unique<GamepadState>(next_step_tf, gripper_position);
 
     // update controller goal state
-    this->set_goal_pose_(goal_pose);
+    this->setGoalPose_(goal_pose);
 }
 
-void RobotControlNode::set_goal_pose_(const OkayRobot::JointPose& pose)
+void RobotControlNode::setGoalPose_(const JointPose& pose)
 {
-    if (OkayRobot::pose_is_valid(pose)) {
-        this->controller_->set_goal_state(pose);
+    if (this->kinematics_->poseIsValid(pose)) {
+        this->controller_->setGoalState(pose);
     }
+}
+
 }

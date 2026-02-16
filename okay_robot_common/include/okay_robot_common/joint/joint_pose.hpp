@@ -13,6 +13,4 @@ public:
 
     const Eigen::Vector<float, 6> joint_positions;
 };
-
-bool pose_is_valid(const JointPose pose);
 }

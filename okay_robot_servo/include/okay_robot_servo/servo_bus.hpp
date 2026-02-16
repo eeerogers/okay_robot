@@ -7,6 +7,8 @@
 #define PACKET_HEADER_2 uint8_t(0xFF)
 #define ALL_SERVOS uint8_t(0xFE)
 
+namespace OkayRobot {
+
 enum ServoInstruction {
     PING = 0x01,
     READ_DATA = 0x02,
@@ -123,3 +125,5 @@ private:
 
     MessageParser message_parser_;
 };
+
+}

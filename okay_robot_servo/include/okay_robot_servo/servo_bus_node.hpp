@@ -7,16 +7,17 @@
 #include "okay_robot_servo/servo_bus.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+namespace OkayRobot {
 class ServoBusNode : public rclcpp::Node {
 public:
     ServoBusNode();
 
 private:
-    void timer_callback_();
-    void command_callback_(const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg);
+    void timerCallback_();
+    void servoBusCommandCallback_(const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg);
 
-    void publish_observation();
-    void execute_next_command_();
+    void publishObservation_();
+    void executeNextCommand_();
 
     std::queue<okay_robot_msgs::msg::ServoBusCommand> command_queue_;
 
@@ -31,3 +32,4 @@ private:
     rclcpp::Publisher<okay_robot_msgs::msg::ServoBusObservation>::SharedPtr publisher_;
     rclcpp::Subscription<okay_robot_msgs::msg::ServoBusCommand>::SharedPtr subscriber_;
 };
+}

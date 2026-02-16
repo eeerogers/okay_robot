@@ -11,6 +11,8 @@
 
 using std::placeholders::_1;
 
+namespace OkayRobot {
+
 ServoBusNode::ServoBusNode()
     : Node("servo_bus_node")
 {
@@ -19,21 +21,22 @@ ServoBusNode::ServoBusNode()
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::duration<double>(1.0 / this->poll_freq_));
     this->timer_
-        = this->create_wall_timer(duration, std::bind(&ServoBusNode::timer_callback_, this));
+        = this->create_wall_timer(duration, std::bind(&ServoBusNode::timerCallback_, this));
 
     this->publisher_ = this->create_publisher<okay_robot_msgs::msg::ServoBusObservation>(
-        TOPIC_SERVO_BUS_OBSERVATION, 10);
+        OkayRobotTopic::SERVO_BUS_OBSERVATION, 10);
     this->subscriber_ = this->create_subscription<okay_robot_msgs::msg::ServoBusCommand>(
-        TOPIC_SERVO_BUS_COMMAND, 10, std::bind(&ServoBusNode::command_callback_, this, _1));
+        OkayRobotTopic::SERVO_BUS_COMMAND, 10,
+        std::bind(&ServoBusNode::servoBusCommandCallback_, this, _1));
 }
 
-void ServoBusNode::timer_callback_()
+void ServoBusNode::timerCallback_()
 {
-    this->execute_next_command_();
-    this->publish_observation();
+    this->executeNextCommand_();
+    this->publishObservation_();
 }
 
-void ServoBusNode::publish_observation()
+void ServoBusNode::publishObservation_()
 {
     /** TODO: make this better */
 
@@ -121,7 +124,7 @@ void ServoBusNode::publish_observation()
     this->publisher_->publish(servo_bus_observation);
 }
 
-void ServoBusNode::execute_next_command_()
+void ServoBusNode::executeNextCommand_()
 {
     // TODO: make this better
 
@@ -150,7 +153,10 @@ void ServoBusNode::execute_next_command_()
     this->servo_bus_.sync_write_data(data);
 }
 
-void ServoBusNode::command_callback_(const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg)
+void ServoBusNode::servoBusCommandCallback_(
+    const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg)
 {
     this->command_queue_.push(*msg.get());
+}
+
 }

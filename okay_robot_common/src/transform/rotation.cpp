@@ -2,7 +2,7 @@
 
 namespace OkayRobot {
 
-Rotation Rotation::from_euler(const float& x, const float& y, const float& z)
+Rotation Rotation::fromEuler(const float& x, const float& y, const float& z)
 {
     // just xyz for now
     // TODO: add toggle for different orders of angles

@@ -3,6 +3,8 @@
 
 #include "okay_robot_servo/servo_bus.hpp"
 
+namespace OkayRobot {
+
 /**
  * Builds and formats a packet to send to the servo bus
  *
@@ -258,4 +260,6 @@ void ServoBus::ping(uint8_t id)
     contents.push_back(checksum);
 
     this->serial_.Write(contents);
+}
+
 }

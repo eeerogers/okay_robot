@@ -4,7 +4,7 @@
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<ViewNode>());
+    rclcpp::spin(std::make_shared<OkayRobot::ViewNode>());
     rclcpp::shutdown();
 
     return 0;

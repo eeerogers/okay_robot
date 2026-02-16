@@ -12,30 +12,30 @@
 #include "okay_robot_msgs/msg/servo_bus_observation.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+namespace OkayRobot {
 class RobotControlNode : public rclcpp::Node {
 public:
     RobotControlNode();
 
 private:
     // callbacks
-    void timer_callback_();
-    void okay_robot_goal_subscriber_callback_(const okay_robot_msgs::msg::OkayRobotGoal msg);
-    void twist_subscriber_callback_(const geometry_msgs::msg::Twist msg);
-    void servo_bus_observation_subscriber_callback_(
+    void timerCallback_();
+    void goalSubscriberCallback_(const okay_robot_msgs::msg::OkayRobotGoal msg);
+    void twistSubscriberCallback_(const geometry_msgs::msg::Twist msg);
+    void servoBusObservationSubscriberCallback_(
         const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg);
-    void gamepad_command_subscriber_callback_(
+    void gamepadCommandSubscriberCallback_(
         const okay_robot_msgs::msg::GamepadCommand::SharedPtr msg);
 
-    okay_robot_msgs::msg::ServoBusCommand okay_robot_to_servo_bus_command_(
-        OkayRobot::JointPose& command);
-    void set_goal_pose_(const OkayRobot::JointPose& pose);
+    okay_robot_msgs::msg::ServoBusCommand jointPoseToServoBusCommand_(JointPose& command);
+    void setGoalPose_(const JointPose& pose);
 
     const double control_freq_ = 30.0;
     std::unique_ptr<Controller> controller_;
     std::unique_ptr<Kinematics> kinematics_;
-    std::unique_ptr<OkayRobot::Observation> last_observation_;
-    std::unique_ptr<OkayRobot::GamepadState> last_step_;
-    std::unique_ptr<OkayRobot::GamepadState> next_step_;
+    std::unique_ptr<Observation> last_observation_;
+    std::unique_ptr<GamepadState> last_step_;
+    std::unique_ptr<GamepadState> next_step_;
 
     const int gamepad_stick_deadzone_ = 2000;
     const int gamepad_trigger_deadzone_ = 1000;
@@ -53,3 +53,4 @@ private:
     rclcpp::Subscription<okay_robot_msgs::msg::GamepadCommand>::SharedPtr
         gamepad_command_subscriber_;
 };
+}

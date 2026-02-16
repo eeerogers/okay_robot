@@ -13,7 +13,4 @@ public:
 
     const std::vector<float> joint_positions;
 };
-
-Eigen::Vector<float, 6> pose_to_eigen_vector(const Pose pose);
-bool pose_is_valid(const Pose pose);
 }

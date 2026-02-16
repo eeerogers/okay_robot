@@ -15,7 +15,7 @@ Transform Transform::forward(const Transform& other) const
 
 Transform Transform::inverse() const { return Transform(this->matrix_.inverse()); }
 
-Transform Transform::from_dh(const DenavitHartenberg& dh, const float& theta)
+Transform Transform::fromDH(const DenavitHartenberg& dh, const float& theta)
 {
     const float new_theta = dh.theta + theta;
 
@@ -33,7 +33,7 @@ Transform Transform::from_dh(const DenavitHartenberg& dh, const float& theta)
     return Transform(m);
 }
 
-Transform Transform::from_position_rotation(const Position& position, const Rotation& rotation)
+Transform Transform::fromPositionRotation(const Position& position, const Rotation& rotation)
 {
     Eigen::Matrix4f matrix = Eigen::Matrix4f::Identity();
 

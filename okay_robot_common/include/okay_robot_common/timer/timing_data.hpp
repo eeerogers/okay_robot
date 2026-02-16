@@ -11,8 +11,8 @@ struct TimeDataPoint {
 
 class TimingData {
 public:
-    void add_time(std::string& name, double& time_ms);
-    void summarize_data() const;
+    void addTime(std::string& name, double& time_ms);
+    void summarizeData() const;
 
 private:
     std::unordered_map<std::string, TimeDataPoint> data_;

@@ -2,7 +2,7 @@
 
 #include "okay_robot_common/timer/timing_data.hpp"
 
-void TimingData::add_time(std::string& name, double& time_ms)
+void TimingData::addTime(std::string& name, double& time_ms)
 {
     if (this->data_.find(name) == this->data_.end()) {
         this->data_[name] = TimeDataPoint({ time_ms, 1 });
@@ -14,7 +14,7 @@ void TimingData::add_time(std::string& name, double& time_ms)
     }
 }
 
-void TimingData::summarize_data() const
+void TimingData::summarizeData() const
 {
     if (this->data_.size() == 0) {
         std::cout << "No data captured" << std::endl;

@@ -14,7 +14,7 @@ struct Bounds {
 };
 
 struct JointDescription {
-    const OkayRobot::DenavitHartenberg dh;
+    const DenavitHartenberg dh;
     const Bounds bounds;
 };
 
@@ -23,18 +23,16 @@ public:
     Description(const std::vector<JointDescription> joints)
         : joints_(joints) { };
 
-    bool pose_is_valid(const OkayRobot::Pose pose) const;
+    inline float upperBound(const int& index) const { return this->joints_[index].bounds.upper; };
+    inline float lowerBound(const int& index) const { return this->joints_[index].bounds.lower; };
 
-    float upper_bound(const int& index) const;
-    float lower_bound(const int& index) const;
+    inline float dhA(const int& index) const { return this->joints_[index].dh.a; };
+    inline float dhD(const int& index) const { return this->joints_[index].dh.d; };
+    inline float dhAlpha(const int& index) const { return this->joints_[index].dh.alpha; };
+    inline float dhTheta(const int& index) const { return this->joints_[index].dh.theta; };
+    inline const DenavitHartenberg dh(const int& index) const { return this->joints_[index].dh; };
 
-    float dh_a(const int& index) const;
-    float dh_d(const int& index) const;
-    float dh_alpha(const int& index) const;
-    float dh_theta(const int& index) const;
-    const DenavitHartenberg dh(const int& index) const;
-
-    int length() const;
+    inline int length() const { return this->joints_.size(); };
 
 private:
     const std::vector<JointDescription> joints_;

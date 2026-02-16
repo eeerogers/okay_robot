@@ -5,7 +5,8 @@
 #include <atomic>
 #include <mutex>
 
-void spin_mujoco_gui(mjModel* m, mjData* d, std::atomic<bool>& shutdown_flag, std::mutex& mutex);
+namespace OkayRobot {
+void spinMujocoGUI(mjModel* m, mjData* d, std::atomic<bool>& shutdown_flag, std::mutex& mutex);
 class MujocoGUI {
 public:
     MujocoGUI(mjModel* m, mjData* d, std::mutex& mutex)
@@ -17,16 +18,16 @@ public:
     void init();
     void update();
 
-    bool should_close();
+    bool shouldClose();
 
 private:
-    void on_mouse_button(GLFWwindow* window, int button, int act, int mods);
-    void on_mouse_move(GLFWwindow* window, double x_pos, double y_pos);
-    void on_mouse_scroll(GLFWwindow* window, double x_offset, double y_offset);
+    void onMouseButton_(GLFWwindow* window, int button, int act, int mods);
+    void onMouseMove_(GLFWwindow* window, double x_pos, double y_pos);
+    void onMouseScroll_(GLFWwindow* window, double x_offset, double y_offset);
 
-    static void mouse_move_callback(GLFWwindow* window, double x_pos, double y_pos);
-    static void mouse_button_callback(GLFWwindow* window, int button, int act, int mods);
-    static void mouse_scroll_callback(GLFWwindow* window, double x_offset, double y_offset);
+    static void mouseMoveCallback_(GLFWwindow* window, double x_pos, double y_pos);
+    static void mouseButtonCallback_(GLFWwindow* window, int button, int act, int mods);
+    static void mouseScrollCallback_(GLFWwindow* window, double x_offset, double y_offset);
 
     mjModel* m_;
     mjData* d_;
@@ -43,3 +44,4 @@ private:
     double last_x_ = 0;
     double last_y_ = 0;
 };
+}

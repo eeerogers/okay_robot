@@ -4,11 +4,13 @@
 
 #include "okay_robot_control/kinematics.hpp"
 
-const OkayRobot::JointPose Kinematics::get_inverse(
-    const OkayRobot::Transform& eef_transform, const OkayRobot::JointPose& last_pose) const
+namespace OkayRobot {
+
+const JointPose Kinematics::getInverse(
+    const Transform& eef_transform, const JointPose& last_pose) const
 {
     Eigen::Vector3f eef_offset
-        = (this->description_.dh_d(6) + this->description_.dh_d(7)) * eef_transform.rotation().z();
+        = (this->description_.dhD(6) + this->description_.dhD(7)) * eef_transform.rotation().z();
     const Eigen::Vector3f offset_position = eef_transform.position().vector() - eef_offset;
     const Eigen::Matrix3f rotation = eef_transform.rotation().matrix();
 
@@ -16,12 +18,12 @@ const OkayRobot::JointPose Kinematics::get_inverse(
     float y = offset_position[1];
     float z = offset_position[2];
 
-    float s = z - (this->description_.dh_d(0) + this->description_.dh_d(1));
-    float r = std::sqrt(x * x + y * y) - this->description_.dh_a(1);
+    float s = z - (this->description_.dhD(0) + this->description_.dhD(1));
+    float r = std::sqrt(x * x + y * y) - this->description_.dhA(1);
     float phi2 = std::atan(0.028 / 0.150);
-    float a2 = this->description_.dh_a(2);
-    float a3 = this->description_.dh_a(3);
-    float d4 = this->description_.dh_d(4);
+    float a2 = this->description_.dhA(2);
+    float a3 = this->description_.dhA(3);
+    float d4 = this->description_.dhD(4);
 
     // j1
     float theta1 = std::atan2(y, x);
@@ -74,30 +76,29 @@ const OkayRobot::JointPose Kinematics::get_inverse(
 
     if ((last_pose.joint_positions - pose_pos).lpNorm<1>()
         <= (last_pose.joint_positions - pose_neg).lpNorm<1>())
-        return OkayRobot::JointPose(pose_pos);
+        return JointPose(pose_pos);
     else
-        return OkayRobot::JointPose(pose_neg);
+        return JointPose(pose_neg);
 }
 
-const OkayRobot::Transform Kinematics::get_forward(const OkayRobot::JointPose& robot_pose) const
+const Transform Kinematics::getForward(const JointPose& robot_pose) const
 {
     // start with the transform from world to joint1
-    OkayRobot::Transform running_tf(this->description_.dh(0), 0.0);
+    Transform running_tf(this->description_.dh(0), 0.0);
 
     // iterate through each joint in the chain (6)
     // TODO: don't hardcode the number of joints?
     for (int i = 0; i < 6; i++) {
-        auto dh_tf
-            = OkayRobot::Transform(this->description_.dh(i + 1), robot_pose.joint_positions[i]);
+        auto dh_tf = Transform(this->description_.dh(i + 1), robot_pose.joint_positions[i]);
         running_tf = running_tf.forward(dh_tf);
     }
 
     // the transforms after kinematic chain just gets added to the end
-    auto eef_dh_tf = OkayRobot::Transform(this->description_.dh(7), 0.0);
+    auto eef_dh_tf = Transform(this->description_.dh(7), 0.0);
     return running_tf.forward(eef_dh_tf);
 }
 
-Eigen::Matrix<float, 6, 6> Kinematics::get_jacobian(const OkayRobot::JointPose& robot_pose) const
+Eigen::Matrix<float, 6, 6> Kinematics::getJacobian(const JointPose& robot_pose) const
 {
     // J = [Jv]
     //     [Jw]
@@ -105,11 +106,11 @@ Eigen::Matrix<float, 6, 6> Kinematics::get_jacobian(const OkayRobot::JointPose& 
     // Jv = [z_i-1 x (o_n - o_i-1)]
     // Jw = [z_i-1]
 
-    const OkayRobot::Transform tf_eef = this->get_forward(robot_pose);
+    const Transform tf_eef = this->getForward(robot_pose);
 
     Eigen::Matrix<float, 6, 6> jacobian = Eigen::Matrix<float, 6, 6>::Zero(6, 6);
-    OkayRobot::Transform dh_tf(this->description_.dh(0), 0.0);
-    OkayRobot::Transform running_tf(dh_tf);
+    Transform dh_tf(this->description_.dh(0), 0.0);
+    Transform running_tf(dh_tf);
 
     for (int i = 0; i < 6; i++) {
         // populate Jv and Jw in the column of the jacobian
@@ -117,27 +118,44 @@ Eigen::Matrix<float, 6, 6> Kinematics::get_jacobian(const OkayRobot::JointPose& 
             tf_eef.position().vector() - running_tf.position().vector());
         jacobian.block<3, 1>(3, i) = running_tf.rotation().z();
 
-        dh_tf = OkayRobot::Transform(this->description_.dh(i + 1), robot_pose.joint_positions[i]);
+        dh_tf = Transform(this->description_.dh(i + 1), robot_pose.joint_positions[i]);
         running_tf = running_tf.forward(dh_tf);
     }
 
     return jacobian;
 }
 
-const OkayRobot::Description Kinematics::setup_robot_description_()
+bool Kinematics::poseIsValid(const JointPose pose) const
+{
+    for (int i = 0; i < pose.joint_positions.size(); i++) {
+        if (std::isnan(pose.joint_positions[i])) {
+            return false;
+        }
+
+        // TODO: make this work
+        // if (pose.joint_positions[i] > this->description_.upperBound(i + 1)
+        //     || pose.joint_positions[i] < this->description_.lowerBound(i + 1)) {
+        //     return false;
+        // }
+    }
+
+    return true;
+}
+
+const Description Kinematics::setupRobotDescription_()
 {
     // d0 = 0.039;
-    auto j0_dh = OkayRobot::DenavitHartenberg(0.0, 0.039, 0.0, 0.0);
-    auto j0_bounds = OkayRobot::Bounds({ 0.0, 0.0 });
-    auto joint0 = OkayRobot::JointDescription { j0_dh, j0_bounds };
+    auto j0_dh = DenavitHartenberg(0.0, 0.039, 0.0, 0.0);
+    auto j0_bounds = Bounds({ 0.0, 0.0 });
+    auto joint0 = JointDescription { j0_dh, j0_bounds };
 
     // a1 = 0.040;
     // d1 = 0.042;
     // alpha1 = 90deg;
     // offset1 = 90deg;
-    auto j1_dh = OkayRobot::DenavitHartenberg(0.040, 0.042, M_PI_2, -M_PI_2);
-    auto j1_bounds = OkayRobot::Bounds({ -M_PI_2, M_PI_2 });
-    auto joint1 = OkayRobot::JointDescription { j1_dh, j1_bounds };
+    auto j1_dh = DenavitHartenberg(0.040, 0.042, M_PI_2, -M_PI_2);
+    auto j1_bounds = Bounds({ -M_PI_2, M_PI_2 });
+    auto joint1 = JointDescription { j1_dh, j1_bounds };
 
     // a2_a = 0.150;
     // a2_b = 0.028;
@@ -145,50 +163,49 @@ const OkayRobot::Description Kinematics::setup_robot_description_()
     // phi2 = std::tan(a2_b / a2_a);
     // theta2 = 90deg + phi2;
     // offset2 = 90deg;
-    auto j2_dh = OkayRobot::DenavitHartenberg(
+    auto j2_dh = DenavitHartenberg(
         std::sqrt(0.15 * 0.15 + 0.028 * 0.028), 0.0, 0.0, std::tan(0.028 / 0.15));
-    auto j2_bounds = OkayRobot::Bounds({ -M_PI_2, M_PI_2 });
-    auto joint2 = OkayRobot::JointDescription { j2_dh, j2_bounds };
+    auto j2_bounds = Bounds({ -M_PI_2, M_PI_2 });
+    auto joint2 = JointDescription { j2_dh, j2_bounds };
 
     // a3 = 0.060;
     // alpha3 = 90deg;
     // theta3 = -phi2;
     // offset3 = 270deg;
-    auto j3_dh
-        = OkayRobot::DenavitHartenberg(0.06, 0.0, M_PI_2, -std::tan(0.028 / 0.15) - (3.0 * M_PI_2));
-    auto j3_bounds = OkayRobot::Bounds({ -M_PI_2, M_PI_2 });
-    auto joint3 = OkayRobot::JointDescription { j3_dh, j3_bounds };
+    auto j3_dh = DenavitHartenberg(0.06, 0.0, M_PI_2, -std::tan(0.028 / 0.15) - (3.0 * M_PI_2));
+    auto j3_bounds = Bounds({ -M_PI_2, M_PI_2 });
+    auto joint3 = JointDescription { j3_dh, j3_bounds };
 
     // d4 = 0.155;
     // alpha4 = -90deg;
     // offset4 = 180deg;
-    auto j4_dh = OkayRobot::DenavitHartenberg(0.0, 0.155, -M_PI_2, -M_PI);
-    auto j4_bounds = OkayRobot::Bounds({ -M_PI, M_PI });
-    auto joint4 = OkayRobot::JointDescription { j4_dh, j4_bounds };
+    auto j4_dh = DenavitHartenberg(0.0, 0.155, -M_PI_2, -M_PI);
+    auto j4_bounds = Bounds({ -M_PI, M_PI });
+    auto joint4 = JointDescription { j4_dh, j4_bounds };
 
     // alpha5 = 90deg;
     // offset5 = 90deg;
-    auto j5_dh = OkayRobot::DenavitHartenberg(0.0, 0.0, M_PI_2, -M_PI_2);
-    auto j5_bounds = OkayRobot::Bounds({ -M_PI_2, M_PI_2 });
-    auto joint5 = OkayRobot::JointDescription { j5_dh, j5_bounds };
+    auto j5_dh = DenavitHartenberg(0.0, 0.0, M_PI_2, -M_PI_2);
+    auto j5_bounds = Bounds({ -M_PI_2, M_PI_2 });
+    auto joint5 = JointDescription { j5_dh, j5_bounds };
 
     // d6 = 0.065;
     // offset6 = 180deg;
-    auto j6_dh = OkayRobot::DenavitHartenberg(0.0, 0.065, 0.0, -M_PI);
-    auto j6_bounds = OkayRobot::Bounds({ -M_PI, M_PI });
-    auto joint6 = OkayRobot::JointDescription { j6_dh, j6_bounds };
+    auto j6_dh = DenavitHartenberg(0.0, 0.065, 0.0, -M_PI);
+    auto j6_bounds = Bounds({ -M_PI, M_PI });
+    auto joint6 = JointDescription { j6_dh, j6_bounds };
 
     // d7 = 0.079;
-    auto j7_dh = OkayRobot::DenavitHartenberg(0.0, 0.079, 0.0, 0.0);
-    auto j7_bounds = OkayRobot::Bounds({ 0.0, 0.0 });
-    auto joint7 = OkayRobot::JointDescription { j7_dh, j7_bounds };
+    auto j7_dh = DenavitHartenberg(0.0, 0.079, 0.0, 0.0);
+    auto j7_bounds = Bounds({ 0.0, 0.0 });
+    auto joint7 = JointDescription { j7_dh, j7_bounds };
 
-    auto joint_chain = std::vector<OkayRobot::JointDescription>(
+    auto joint_chain = std::vector<JointDescription>(
         { joint0, joint1, joint2, joint3, joint4, joint5, joint6, joint7 });
-    return OkayRobot::Description(joint_chain);
+    return Description(joint_chain);
 }
 
-const Eigen::Vector<float, 6> Kinematics::setup_joint_offsets_()
+const Eigen::Vector<float, 6> Kinematics::setupJointOffsets_()
 {
     // offsets to match the real robot
     // theta1 = 90.0
@@ -201,4 +218,6 @@ const Eigen::Vector<float, 6> Kinematics::setup_joint_offsets_()
     Eigen::Vector<float, 6> joint_offsets;
     joint_offsets << M_PI_2, M_PI_2, 3.0 * M_PI_2, M_PI, M_PI_2, M_PI;
     return joint_offsets;
+}
+
 }

@@ -2,7 +2,9 @@
 
 #include "okay_robot_common/pose.hpp"
 
+namespace OkayRobot {
 // protocol
 class PathPlanner {
-    virtual void set_goal_state(OkayRobot::Pose& goal_state) = 0;
+    virtual void setGoalState(Pose& goal_state) = 0;
 };
+}

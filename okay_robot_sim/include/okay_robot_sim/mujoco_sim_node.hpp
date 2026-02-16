@@ -7,17 +7,18 @@
 #include <atomic>
 #include <mutex>
 
+namespace OkayRobot {
 class MujocoSimNode : public rclcpp::Node {
 public:
     MujocoSimNode();
     ~MujocoSimNode();
 
 private:
-    void timer_callback_();
-    void publish_observations_();
-    void servo_bus_command_subscriber_callback_(
+    void timerCallback_();
+    void publishObservations_();
+    void servoBusCommandSubscriberCallback_(
         const okay_robot_msgs::msg::ServoBusCommand::SharedPtr msg);
-    void servo_bus_observation_subscriber_callback_(
+    void servoBusObservationSubscriberCallback_(
         const okay_robot_msgs::msg::ServoBusObservation::SharedPtr msg);
 
     mjModel* m_;
@@ -41,3 +42,4 @@ private:
         servo_bus_observation_subscriber_
         = nullptr;
 };
+}

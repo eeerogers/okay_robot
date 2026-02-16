@@ -2,6 +2,8 @@
 
 #include "okay_robot_msgs/msg/gamepad_command.hpp"
 
+namespace OkayRobot {
+
 enum gamepad_button {
     BUTTON_D = 0,
     BUTTON_R = 1,
@@ -46,3 +48,5 @@ enum gamepad_dpad {
 void set_button(okay_robot_msgs::msg::GamepadCommand* msg, const int& val, const bool& state);
 void set_axis(okay_robot_msgs::msg::GamepadCommand* msg, const int& val, const int& state);
 void set_dpad(okay_robot_msgs::msg::GamepadCommand* msg, const int& val, const bool& state);
+
+}

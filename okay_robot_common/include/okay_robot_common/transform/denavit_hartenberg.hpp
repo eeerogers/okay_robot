@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 
 namespace OkayRobot {
-class DenavitHartenberg {
+struct DenavitHartenberg {
 public:
     DenavitHartenberg(const float& a, const float& d, const float& alpha, const float& theta)
         : a(a)

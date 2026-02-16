@@ -145,17 +145,17 @@ bool Kinematics::poseIsValid(const JointPose pose) const
 const Description Kinematics::setupRobotDescription_()
 {
     // d0 = 0.039;
-    auto j0_dh = DenavitHartenberg(0.0, 0.039, 0.0, 0.0);
-    auto j0_bounds = Bounds({ 0.0, 0.0 });
-    auto joint0 = JointDescription { j0_dh, j0_bounds };
+    DenavitHartenberg j0_dh { 0.0, 0.039, 0.0, 0.0 };
+    Bounds j0_bounds { 0.0, 0.0 };
+    JointDescription joint0 { j0_dh, j0_bounds };
 
     // a1 = 0.040;
     // d1 = 0.042;
     // alpha1 = 90deg;
     // offset1 = 90deg;
-    auto j1_dh = DenavitHartenberg(0.040, 0.042, M_PI_2, -M_PI_2);
-    auto j1_bounds = Bounds({ -M_PI_2, M_PI_2 });
-    auto joint1 = JointDescription { j1_dh, j1_bounds };
+    DenavitHartenberg j1_dh { 0.040, 0.042, M_PI_2, -M_PI_2 };
+    Bounds j1_bounds { -M_PI_2, M_PI_2 };
+    JointDescription joint1 { j1_dh, j1_bounds };
 
     // a2_a = 0.150;
     // a2_b = 0.028;
@@ -163,45 +163,45 @@ const Description Kinematics::setupRobotDescription_()
     // phi2 = std::tan(a2_b / a2_a);
     // theta2 = 90deg + phi2;
     // offset2 = 90deg;
-    auto j2_dh = DenavitHartenberg(
-        std::sqrt(0.15 * 0.15 + 0.028 * 0.028), 0.0, 0.0, std::tan(0.028 / 0.15));
-    auto j2_bounds = Bounds({ -M_PI_2, M_PI_2 });
-    auto joint2 = JointDescription { j2_dh, j2_bounds };
+    DenavitHartenberg j2_dh { std::sqrt(0.15 * 0.15 + 0.028 * 0.028), 0.0, 0.0,
+        std::tan(0.028 / 0.15) };
+    Bounds j2_bounds { -M_PI_2, M_PI_2 };
+    JointDescription joint2 { j2_dh, j2_bounds };
 
     // a3 = 0.060;
     // alpha3 = 90deg;
     // theta3 = -phi2;
     // offset3 = 270deg;
-    auto j3_dh = DenavitHartenberg(0.06, 0.0, M_PI_2, -std::tan(0.028 / 0.15) - (3.0 * M_PI_2));
-    auto j3_bounds = Bounds({ -M_PI_2, M_PI_2 });
-    auto joint3 = JointDescription { j3_dh, j3_bounds };
+    DenavitHartenberg j3_dh { 0.06, 0.0, M_PI_2, -std::tan(0.028 / 0.15) - (3.0 * M_PI_2) };
+    Bounds j3_bounds { -M_PI_2, M_PI_2 };
+    JointDescription joint3 { j3_dh, j3_bounds };
 
     // d4 = 0.155;
     // alpha4 = -90deg;
     // offset4 = 180deg;
-    auto j4_dh = DenavitHartenberg(0.0, 0.155, -M_PI_2, -M_PI);
-    auto j4_bounds = Bounds({ -M_PI, M_PI });
-    auto joint4 = JointDescription { j4_dh, j4_bounds };
+    DenavitHartenberg j4_dh { 0.0, 0.155, -M_PI_2, -M_PI };
+    Bounds j4_bounds { -M_PI, M_PI };
+    JointDescription joint4 { j4_dh, j4_bounds };
 
     // alpha5 = 90deg;
     // offset5 = 90deg;
-    auto j5_dh = DenavitHartenberg(0.0, 0.0, M_PI_2, -M_PI_2);
-    auto j5_bounds = Bounds({ -M_PI_2, M_PI_2 });
-    auto joint5 = JointDescription { j5_dh, j5_bounds };
+    DenavitHartenberg j5_dh { 0.0, 0.0, M_PI_2, -M_PI_2 };
+    Bounds j5_bounds { -M_PI_2, M_PI_2 };
+    JointDescription joint5 { j5_dh, j5_bounds };
 
     // d6 = 0.065;
     // offset6 = 180deg;
-    auto j6_dh = DenavitHartenberg(0.0, 0.065, 0.0, -M_PI);
-    auto j6_bounds = Bounds({ -M_PI, M_PI });
-    auto joint6 = JointDescription { j6_dh, j6_bounds };
+    DenavitHartenberg j6_dh { 0.0, 0.065, 0.0, -M_PI };
+    Bounds j6_bounds { -M_PI, M_PI };
+    JointDescription joint6 { j6_dh, j6_bounds };
 
     // d7 = 0.079;
-    auto j7_dh = DenavitHartenberg(0.0, 0.079, 0.0, 0.0);
-    auto j7_bounds = Bounds({ 0.0, 0.0 });
-    auto joint7 = JointDescription { j7_dh, j7_bounds };
+    DenavitHartenberg j7_dh { 0.0, 0.079, 0.0, 0.0 };
+    Bounds j7_bounds { 0.0, 0.0 };
+    JointDescription joint7 { j7_dh, j7_bounds };
 
-    auto joint_chain = std::vector<JointDescription>(
-        { joint0, joint1, joint2, joint3, joint4, joint5, joint6, joint7 });
+    auto joint_chain = std::vector<JointDescription> { joint0, joint1, joint2, joint3, joint4,
+        joint5, joint6, joint7 };
     return Description(joint_chain);
 }
 

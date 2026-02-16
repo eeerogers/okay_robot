@@ -9,8 +9,8 @@
 namespace OkayRobot {
 
 struct Bounds {
-    const float upper;
     const float lower;
+    const float upper;
 };
 
 struct JointDescription {

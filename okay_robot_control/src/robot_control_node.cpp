@@ -150,6 +150,7 @@ void RobotControlNode::servoBusObservationSubscriberCallback_(
     Eigen::Vector<float, 6> joint_velocities(std::vector<float>(
         new_observation.joint_velocities.begin(), new_observation.joint_velocities.begin() + 6)
             .data());
+    Eigen::Vector<float, 6> joint_positions(joint_pos.data());
     Eigen::Vector<float, 6> eef_velocity = jacobian * joint_velocities;
 
     RCLCPP_INFO_STREAM(this->get_logger(), eef_velocity);

@@ -10,7 +10,7 @@ const JointPose Kinematics::getInverse(
     const Transform& eef_transform, const JointPose& last_pose) const
 {
     Eigen::Vector3f eef_offset
-        = (this->description_.dhD(6) + this->description_.dhD(7)) * eef_transform.rotation().z();
+        = (this->description.dhD(6) + this->description.dhD(7)) * eef_transform.rotation().z();
     const Eigen::Vector3f offset_position = eef_transform.position().vector() - eef_offset;
     const Eigen::Matrix3f rotation = eef_transform.rotation().matrix();
 
@@ -18,12 +18,12 @@ const JointPose Kinematics::getInverse(
     float y = offset_position[1];
     float z = offset_position[2];
 
-    float s = z - (this->description_.dhD(0) + this->description_.dhD(1));
-    float r = std::sqrt(x * x + y * y) - this->description_.dhA(1);
+    float s = z - (this->description.dhD(0) + this->description.dhD(1));
+    float r = std::sqrt(x * x + y * y) - this->description.dhA(1);
     float phi2 = std::atan(0.028 / 0.150);
-    float a2 = this->description_.dhA(2);
-    float a3 = this->description_.dhA(3);
-    float d4 = this->description_.dhD(4);
+    float a2 = this->description.dhA(2);
+    float a3 = this->description.dhA(3);
+    float d4 = this->description.dhD(4);
 
     // j1
     float theta1 = std::atan2(y, x);
@@ -68,11 +68,11 @@ const JointPose Kinematics::getInverse(
     // determine which configuration to use
     Eigen::Vector<float, 6> pose_pos;
     pose_pos << theta1, theta2, theta3, theta4_pos, theta5_pos, theta6_pos;
-    pose_pos += this->joint_offsets_;
+    pose_pos += this->joint_offsets;
 
     Eigen::Vector<float, 6> pose_neg;
     pose_neg << theta1, theta2, theta3, theta4_neg, theta5_neg, theta6_neg;
-    pose_neg += this->joint_offsets_;
+    pose_neg += this->joint_offsets;
 
     if ((last_pose.joint_positions - pose_pos).lpNorm<1>()
         <= (last_pose.joint_positions - pose_neg).lpNorm<1>())
@@ -84,17 +84,17 @@ const JointPose Kinematics::getInverse(
 const Transform Kinematics::getForward(const JointPose& robot_pose) const
 {
     // start with the transform from world to joint1
-    Transform running_tf(this->description_.dh(0), 0.0);
+    Transform running_tf(this->description.dh(0), 0.0);
 
     // iterate through each joint in the chain (6)
     // TODO: don't hardcode the number of joints?
     for (int i = 0; i < 6; i++) {
-        auto dh_tf = Transform(this->description_.dh(i + 1), robot_pose.joint_positions[i]);
+        auto dh_tf = Transform(this->description.dh(i + 1), robot_pose.joint_positions[i]);
         running_tf = running_tf.forward(dh_tf);
     }
 
     // the transforms after kinematic chain just gets added to the end
-    auto eef_dh_tf = Transform(this->description_.dh(7), 0.0);
+    auto eef_dh_tf = Transform(this->description.dh(7), 0.0);
     return running_tf.forward(eef_dh_tf);
 }
 
@@ -109,7 +109,7 @@ Eigen::Matrix<float, 6, 6> Kinematics::getJacobian(const JointPose& robot_pose) 
     const Transform tf_eef = this->getForward(robot_pose);
 
     Eigen::Matrix<float, 6, 6> jacobian = Eigen::Matrix<float, 6, 6>::Zero(6, 6);
-    Transform dh_tf(this->description_.dh(0), 0.0);
+    Transform dh_tf(this->description.dh(0), 0.0);
     Transform running_tf(dh_tf);
 
     for (int i = 0; i < 6; i++) {
@@ -118,7 +118,7 @@ Eigen::Matrix<float, 6, 6> Kinematics::getJacobian(const JointPose& robot_pose) 
             tf_eef.position().vector() - running_tf.position().vector());
         jacobian.block<3, 1>(3, i) = running_tf.rotation().z();
 
-        dh_tf = Transform(this->description_.dh(i + 1), robot_pose.joint_positions[i]);
+        dh_tf = Transform(this->description.dh(i + 1), robot_pose.joint_positions[i]);
         running_tf = running_tf.forward(dh_tf);
     }
 
@@ -133,10 +133,10 @@ bool Kinematics::poseIsValid(const JointPose pose) const
         }
 
         // TODO: make this work
-        // if (pose.joint_positions[i] > this->description_.upperBound(i + 1)
-        //     || pose.joint_positions[i] < this->description_.lowerBound(i + 1)) {
-        //     return false;
-        // }
+        if (pose.joint_positions[i] > this->description.upperBound(i + 1)
+            || pose.joint_positions[i] < this->description.lowerBound(i + 1)) {
+            return false;
+        }
     }
 
     return true;
@@ -154,7 +154,7 @@ const Description Kinematics::setupRobotDescription_()
     // alpha1 = 90deg;
     // offset1 = 90deg;
     DenavitHartenberg j1_dh { 0.040, 0.042, M_PI_2, -M_PI_2 };
-    Bounds j1_bounds { -M_PI_2, M_PI_2 };
+    Bounds j1_bounds { 0.0, M_PI };
     JointDescription joint1 { j1_dh, j1_bounds };
 
     // a2_a = 0.150;
@@ -165,7 +165,7 @@ const Description Kinematics::setupRobotDescription_()
     // offset2 = 90deg;
     DenavitHartenberg j2_dh { std::sqrt(0.15 * 0.15 + 0.028 * 0.028), 0.0, 0.0,
         std::tan(0.028 / 0.15) };
-    Bounds j2_bounds { -M_PI_2, M_PI_2 };
+    Bounds j2_bounds { 0.0, M_PI };
     JointDescription joint2 { j2_dh, j2_bounds };
 
     // a3 = 0.060;
@@ -173,26 +173,26 @@ const Description Kinematics::setupRobotDescription_()
     // theta3 = -phi2;
     // offset3 = 270deg;
     DenavitHartenberg j3_dh { 0.06, 0.0, M_PI_2, -std::tan(0.028 / 0.15) - (3.0 * M_PI_2) };
-    Bounds j3_bounds { -M_PI_2, M_PI_2 };
+    Bounds j3_bounds { M_PI, 2.0 * M_PI };
     JointDescription joint3 { j3_dh, j3_bounds };
 
     // d4 = 0.155;
     // alpha4 = -90deg;
     // offset4 = 180deg;
     DenavitHartenberg j4_dh { 0.0, 0.155, -M_PI_2, -M_PI };
-    Bounds j4_bounds { -M_PI, M_PI };
+    Bounds j4_bounds { 0.0, 2.0 * M_PI };
     JointDescription joint4 { j4_dh, j4_bounds };
 
     // alpha5 = 90deg;
     // offset5 = 90deg;
     DenavitHartenberg j5_dh { 0.0, 0.0, M_PI_2, -M_PI_2 };
-    Bounds j5_bounds { -M_PI_2, M_PI_2 };
+    Bounds j5_bounds { 0.0, M_PI };
     JointDescription joint5 { j5_dh, j5_bounds };
 
     // d6 = 0.065;
     // offset6 = 180deg;
     DenavitHartenberg j6_dh { 0.0, 0.065, 0.0, -M_PI };
-    Bounds j6_bounds { -M_PI, M_PI };
+    Bounds j6_bounds { 0.0, 2.0 * M_PI };
     JointDescription joint6 { j6_dh, j6_bounds };
 
     // d7 = 0.079;

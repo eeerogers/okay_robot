@@ -4,7 +4,6 @@
 
 #include "okay_robot_common/joint/joint_pose.hpp"
 #include "okay_robot_common/observation.hpp"
-#include "okay_robot_common/pose.hpp"
 #include "okay_robot_control/control/controller.hpp"
 
 namespace OkayRobot {

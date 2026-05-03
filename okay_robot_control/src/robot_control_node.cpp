@@ -128,6 +128,7 @@ void RobotControlNode::servoBusObservationSubscriberCallback_(
     auto current_time = std::chrono::steady_clock::now();
     std::vector<float> joint_pos(this->last_observation_->joint_positions);
     std::vector<float> joint_vel(this->last_observation_->joint_velocities);
+    std::vector<float> joint_lod(this->last_observation_->joint_loads);
 
     // TODO: un-hardcode 7 here
     for (auto observation : msg->observations) {
@@ -139,9 +140,10 @@ void RobotControlNode::servoBusObservationSubscriberCallback_(
 
         joint_pos[observation.id - 1] = observation.position;
         joint_vel[observation.id - 1] = observation.speed;
+        joint_lod[observation.id - 1] = observation.load;
     }
 
-    Observation new_observation({ current_time, joint_pos, joint_vel });
+    Observation new_observation { current_time, joint_pos, joint_vel, joint_lod };
     this->last_observation_ = std::make_unique<Observation>(new_observation);
 
     // test jacobian
